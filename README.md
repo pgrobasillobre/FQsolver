@@ -1,0 +1,2 @@
+# FQsolver
+Solvent effects high-performance computations
