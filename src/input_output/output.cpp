@@ -53,16 +53,16 @@ void Output::close()
 // Prints a banner for FQSolver at the beginning of the output.
 void Output::print_banner()
 {
-    const std::string indent = std::string(20, ' ');
+    const std::string indent = std::string(18, ' ');
 
     log_stream << " " << sticks << "\n \n";
 
-    log_stream << indent << "    ______          __  __          __  \n";
-    log_stream << indent << "   / ____/_______  / /_/ /   ____ _/ /_ \n";
-    log_stream << indent << "  / /_  / ___/ _  / __/ /   / __ `/ __ |\n";
-    log_stream << indent << " / __/ / /  /  __/ /_/ /___/ /_/ / /_/ /\n";
-    log_stream << indent << "/_/   /_/   |___/ __/_____/__,_/_.___/  \n";
-    log_stream << indent << "                                        \n";
+    log_stream << indent << "    __________      _____       __                \n";
+    log_stream << indent << "   / ____/ __ \\    / ___/____  / /   _____  _____ \n";
+    log_stream << indent << "  / /_  / / / /    \\__ \\/ __ \\/ / | / / _ \\/ ___/ \n";
+    log_stream << indent << " / __/ / /_/ /    ___/ / /_/ / /| |/ /  __/ /     \n";
+    log_stream << indent << "/_/    \\___\\_\\   /____/\\____/_/ |___/\\___/_/      \n";
+    log_stream << indent << "                                                  \n";
 
     log_stream << " \n " << sticks << "\n \n";
     log_stream << std::string(25, ' ') << "Program by Pablo Grobas Illobre\n \n";
@@ -79,19 +79,18 @@ void Output::print_density(const Target &target, const Density &cube, std::optio
     std::string donor_header = Parameters::donor_header;
     std::string filepath;
 
-    if (header==acceptor_header)
+    if (header == acceptor_header)
     {
-        std::string filepath = target.acceptor_density_file;
+        filepath = target.acceptor_density_file;
     }
-    else if (header==donor_header)  
+    else if (header == donor_header)
     {
-        std::string filepath = target.donor_density_file;
+        filepath = target.donor_density_file;
     }
     else
     {
-        std::string filepath = target.density_file_integration;
+        filepath = target.density_file_integration;
     }
-    
 
     // Extract the filename from the full path
     std::string filename = std::filesystem::path(filepath).filename().string();
@@ -123,7 +122,6 @@ void Output::print_density(const Target &target, const Density &cube, std::optio
         log_stream << "     ---> Reduced density points: " << cube.n_points_reduced << "\n \n"; // Integrate cube case
     }
 
-
     log_stream << std::string(3, ' ') << "Associated molecular coordinates (Å): \n \n";
     for (int i = 0; i < cube.natoms; ++i)
     {
@@ -133,45 +131,44 @@ void Output::print_density(const Target &target, const Density &cube, std::optio
                               cube.z[i] * Parameters::ToAng);
     }
 
-
-    // Print rotated transition dipole and angle, if requested    
-    if (header==acceptor_header && target.rotate_acceptor) 
-        {
-        // INPUT Transition density dipole
-        log_stream << "\n   INPUT   Transition density dipole (x,y,z): "
-            << std::fixed << std::setw(10) << std::setprecision(5) << target.acceptor_transdip[0] << " "
-            << std::setw(10) << target.acceptor_transdip[1] << " "
-            << std::setw(10) << target.acceptor_transdip[2] << "\n\n";
-
-        // ROTATED Transition density dipole
-        log_stream << "   ROTATED Transition density dipole (x,y,z): "
-            << std::fixed << std::setw(10) << std::setprecision(5) << target.acceptor_transdip_rot[0] << " "
-            << std::setw(10) << target.acceptor_transdip_rot[1] << " "
-            << std::setw(10) << target.acceptor_transdip_rot[2] << "\n\n";
-
-        // Alignment angle
-        log_stream << "   Alignment angle: "
-            << std::fixed << std::setw(8) << std::setprecision(3) << target.acceptor_density_rotation_angle_check * Parameters::to_degrees
-            << " °\n";
-        }
-    else if (header==donor_header && target.rotate_donor)
+    // Print rotated transition dipole and angle, if requested
+    if (header == acceptor_header && target.rotate_acceptor)
     {
         // INPUT Transition density dipole
         log_stream << "\n   INPUT   Transition density dipole (x,y,z): "
-            << std::fixed << std::setw(10) << std::setprecision(5) << target.donor_transdip[0] << " "
-            << std::setw(10) << target.donor_transdip[1] << " "
-            << std::setw(10) << target.donor_transdip[2] << "\n\n";
+                   << std::fixed << std::setw(10) << std::setprecision(5) << target.acceptor_transdip[0] << " "
+                   << std::setw(10) << target.acceptor_transdip[1] << " "
+                   << std::setw(10) << target.acceptor_transdip[2] << "\n\n";
 
         // ROTATED Transition density dipole
         log_stream << "   ROTATED Transition density dipole (x,y,z): "
-            << std::fixed << std::setw(10) << std::setprecision(5) << target.donor_transdip_rot[0] << " "
-            << std::setw(10) << target.donor_transdip_rot[1] << " "
-            << std::setw(10) << target.donor_transdip_rot[2] << "\n\n";
+                   << std::fixed << std::setw(10) << std::setprecision(5) << target.acceptor_transdip_rot[0] << " "
+                   << std::setw(10) << target.acceptor_transdip_rot[1] << " "
+                   << std::setw(10) << target.acceptor_transdip_rot[2] << "\n\n";
 
         // Alignment angle
         log_stream << "   Alignment angle: "
-            << std::fixed << std::setw(8) << std::setprecision(3) << target.donor_density_rotation_angle_check * Parameters::to_degrees
-            << " °\n";
+                   << std::fixed << std::setw(8) << std::setprecision(3) << target.acceptor_density_rotation_angle_check * Parameters::to_degrees
+                   << " °\n";
+    }
+    else if (header == donor_header && target.rotate_donor)
+    {
+        // INPUT Transition density dipole
+        log_stream << "\n   INPUT   Transition density dipole (x,y,z): "
+                   << std::fixed << std::setw(10) << std::setprecision(5) << target.donor_transdip[0] << " "
+                   << std::setw(10) << target.donor_transdip[1] << " "
+                   << std::setw(10) << target.donor_transdip[2] << "\n\n";
+
+        // ROTATED Transition density dipole
+        log_stream << "   ROTATED Transition density dipole (x,y,z): "
+                   << std::fixed << std::setw(10) << std::setprecision(5) << target.donor_transdip_rot[0] << " "
+                   << std::setw(10) << target.donor_transdip_rot[1] << " "
+                   << std::setw(10) << target.donor_transdip_rot[2] << "\n\n";
+
+        // Alignment angle
+        log_stream << "   Alignment angle: "
+                   << std::fixed << std::setw(8) << std::setprecision(3) << target.donor_density_rotation_angle_check * Parameters::to_degrees
+                   << " °\n";
     }
 
     if (cube.integral > 0.0)
@@ -312,42 +309,43 @@ void Output::print_results_integrals(const Target &target, const Integrals &inte
 }
 //----------------------------------------------------------------------
 // Writes transition dipole and center to .nmd format (used for visualization).
-void Output::print_transdip_nmd(const std::string infile, 
-                                const std::array<double, 3>& transdip, 
-                                const std::array<double, 3>& center) const
+void Output::print_transdip_nmd(const std::string infile,
+                                const std::array<double, 3> &transdip,
+                                const std::array<double, 3> &center) const
 {
 
     double ToAng = Parameters::ToAng;
 
     std::ofstream nmdfile(infile + ".nmd", std::ios::out);
-    if (!nmdfile) {
+    if (!nmdfile)
+    {
         throw std::runtime_error("Cannot open file: " + infile + ".nmd");
     }
 
-    nmdfile << "coordinates  "       
-        << std::fixed << std::setprecision(5)
-        << std::setw(10) << center[0] * ToAng << "  "
-        << std::setw(10) << center[1] * ToAng << "  "
-        << std::setw(10) << center[2] * ToAng << '\n';
-
+    nmdfile << "coordinates  "
+            << std::fixed << std::setprecision(5)
+            << std::setw(10) << center[0] * ToAng << "  "
+            << std::setw(10) << center[1] * ToAng << "  "
+            << std::setw(10) << center[2] * ToAng << '\n';
 
     nmdfile << "mode 1"
-        << std::fixed << std::setprecision(16)
-        << std::setw(25) << transdip[0] << "  "
-        << std::setw(25) << transdip[1] << "  "
-        << std::setw(25) << transdip[2] << '\n';
+            << std::fixed << std::setprecision(16)
+            << std::setw(25) << transdip[0] << "  "
+            << std::setw(25) << transdip[1] << "  "
+            << std::setw(25) << transdip[2] << '\n';
 }
 //----------------------------------------------------------------------
 // Writes cube point XYZ coordinates to a debug .xyz file.
 void Output::print_cube_coordinates(const std::string what_dens,
                                     const int n_points,
-                                    const std::vector<std::array<double, 3>>& xyz) const
+                                    const std::vector<std::array<double, 3>> &xyz) const
 {
     double ToAng = Parameters::ToAng;
     std::string infile = "debug/" + what_dens + "_cube_points.xyz";
 
     std::ofstream cubefile(infile, std::ios::out);
-    if (!cubefile) {
+    if (!cubefile)
+    {
         throw std::runtime_error("Cannot open file: " + infile + ".xyz");
     }
 
@@ -365,18 +363,19 @@ void Output::print_cube_coordinates(const std::string what_dens,
 //----------------------------------------------------------------------
 // Writes nanoparticle atom positions to .xyz file and dipole data to .nmd files.
 // Includes real and imaginary components if available.
-void Output::print_np_coords_dipoles(const std::string infile , const Nanoparticle& np) const
+void Output::print_np_coords_dipoles(const std::string infile, const Nanoparticle &np) const
 {
     double ToAng = Parameters::ToAng;
 
     std::ofstream npfile(infile + ".xyz", std::ios::out);
-    if (!npfile) {
+    if (!npfile)
+    {
         throw std::runtime_error("Cannot open file: " + infile + ".xyz");
     }
 
     npfile << np.natoms << "\n";
     npfile << "NP coordinates\n";
- 
+
     for (int i = 0; i < np.natoms; ++i)
     {
         print_formatted_line2(npfile, "Xx",
@@ -390,22 +389,23 @@ void Output::print_np_coords_dipoles(const std::string infile , const Nanopartic
     //
     // Print dipoles, if present
     //
-    if (np.charges_and_dipoles) 
+    if (np.charges_and_dipoles)
     {
 
         //
         // Real part
         //
         std::ofstream dip_re(infile + "_re.nmd", std::ios::out);
-        if (!dip_re) {
-        throw std::runtime_error("Cannot open file: " + infile + ".nmd");
+        if (!dip_re)
+        {
+            throw std::runtime_error("Cannot open file: " + infile + ".nmd");
         }
 
         dip_re << "coordinates";
         for (int i = 0; i < np.natoms; ++i)
         {
             char line[100];
-            std::snprintf(line, sizeof(line), "%10.5f  %10.5f  %10.5f  ", np.xyz[i][0] * ToAng, np.xyz[i][1] * ToAng, np.xyz[i][2]* ToAng);
+            std::snprintf(line, sizeof(line), "%10.5f  %10.5f  %10.5f  ", np.xyz[i][0] * ToAng, np.xyz[i][1] * ToAng, np.xyz[i][2] * ToAng);
             dip_re << line;
         }
         dip_re << "\nmode 1";
@@ -422,15 +422,16 @@ void Output::print_np_coords_dipoles(const std::string infile , const Nanopartic
         // Imaginary part
         //
         std::ofstream dip_im(infile + "_im.nmd", std::ios::out);
-        if (!dip_im) {
-        throw std::runtime_error("Cannot open file: " + infile + ".nmd");
+        if (!dip_im)
+        {
+            throw std::runtime_error("Cannot open file: " + infile + ".nmd");
         }
 
         dip_im << "coordinates";
         for (int i = 0; i < np.natoms; ++i)
         {
             char line[100];
-            std::snprintf(line, sizeof(line), "%10.5f  %10.5f  %10.5f  ", np.xyz[i][0] * ToAng, np.xyz[i][1] * ToAng, np.xyz[i][2]* ToAng);
+            std::snprintf(line, sizeof(line), "%10.5f  %10.5f  %10.5f  ", np.xyz[i][0] * ToAng, np.xyz[i][1] * ToAng, np.xyz[i][2] * ToAng);
             dip_im << line;
         }
         dip_im << "\nmode 1";
@@ -445,4 +446,3 @@ void Output::print_np_coords_dipoles(const std::string infile , const Nanopartic
     }
 }
 //----------------------------------------------------------------------
-

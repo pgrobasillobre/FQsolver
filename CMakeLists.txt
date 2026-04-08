@@ -68,9 +68,33 @@ add_subdirectory(src)
 # OpenMP (portable)
 # ------------------------
 if(ENABLE_OMP)
-  find_package(OpenMP)
+  if(APPLE AND CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+    find_path(HOMEBREW_LIBOMP_INCLUDE_DIR
+      NAMES omp.h
+      PATHS
+        /opt/homebrew/opt/libomp/include
+        /usr/local/opt/libomp/include
+    )
+    find_library(HOMEBREW_LIBOMP_LIBRARY
+      NAMES omp
+      PATHS
+        /opt/homebrew/opt/libomp/lib
+        /usr/local/opt/libomp/lib
+    )
+
+    if(HOMEBREW_LIBOMP_INCLUDE_DIR AND HOMEBREW_LIBOMP_LIBRARY)
+      set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp" CACHE STRING "" FORCE)
+      set(OpenMP_CXX_LIB_NAMES "omp" CACHE STRING "" FORCE)
+      set(OpenMP_omp_LIBRARY "${HOMEBREW_LIBOMP_LIBRARY}" CACHE FILEPATH "" FORCE)
+    endif()
+  endif()
+
+  find_package(OpenMP COMPONENTS CXX)
   if(OpenMP_CXX_FOUND)
     target_link_libraries(FQSolver PRIVATE OpenMP::OpenMP_CXX)
+    if(HOMEBREW_LIBOMP_INCLUDE_DIR)
+      target_include_directories(FQSolver PRIVATE ${HOMEBREW_LIBOMP_INCLUDE_DIR})
+    endif()
   else()
     message(FATAL_ERROR "ENABLE_OMP=ON but OpenMP not found")
   endif()
@@ -106,4 +130,3 @@ file(COPY ${CMAKE_SOURCE_DIR}/tests DESTINATION ${CMAKE_BINARY_DIR})
 if(EXISTS ${CMAKE_SOURCE_DIR}/submodules/runtest/runtest)
   file(COPY ${CMAKE_SOURCE_DIR}/submodules/runtest/runtest DESTINATION ${CMAKE_BINARY_DIR}/tests)
 endif()
-

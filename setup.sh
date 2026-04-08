@@ -2,7 +2,7 @@
 # Setup script for building FQSolver
 
 README=README.md
-ompvar=0
+omp_mode="auto"
 build="build"
 
 # Parse CLI options
@@ -12,7 +12,10 @@ while test $# -gt 0; do
             echo "Usage: ./setup.sh [options]"
             echo "Options:"
             echo "  -b, --build <dir>    Build directory name (default: build)"
-            echo "  -omp, --omp          Enable OpenMP"
+            echo "  -omp, --omp          Require OpenMP; fail if it is not available"
+            echo "  --serial             Disable OpenMP"
+            echo ""
+            echo "By default, setup tries OpenMP first and falls back to serial if needed."
             exit 0
             ;;
         -b|--build)
@@ -22,7 +25,11 @@ while test $# -gt 0; do
             ;;
         -omp|--omp)
             shift
-            ompvar=1
+            omp_mode="required"
+            ;;
+        --serial)
+            shift
+            omp_mode="serial"
             ;;
         *)
             break
@@ -39,15 +46,24 @@ cd "$buildir"
 
 # Compose cmake arguments
 cmake_args="-DENABLE_AUTO_BLAS=ON -DENABLE_AUTO_LAPACK=ON"
-if [ $ompvar -eq 1 ]; then
-    cmake_args="$cmake_args -DENABLE_OMP=ON"
-fi
 
 # Run cmake
-cmake .. $cmake_args
+if [ "$omp_mode" = "serial" ]; then
+    cmake .. $cmake_args -DENABLE_OMP=OFF
+elif [ "$omp_mode" = "required" ]; then
+    cmake .. $cmake_args -DENABLE_OMP=ON
+else
+    echo "Trying OpenMP build..."
+    cmake .. $cmake_args -DENABLE_OMP=ON
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo "OpenMP was not found. Falling back to serial build..."
+        cmake .. $cmake_args -DENABLE_OMP=OFF
+    fi
+fi
 
-# Check if cmake succeeded
-if [ $? -ne 0 ]; then
+cmake_status=$?
+if [ $cmake_status -ne 0 ]; then
     echo "❌ CMake configuration failed. Check the errors above."
     exit 1
 fi
@@ -64,4 +80,3 @@ echo "To test:"
 echo "$ cd $buildir"
 echo "$ ctest"
 echo ""
-

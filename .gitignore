@@ -47,3 +47,8 @@ build/
 # Tests
 tests/*/*log
 .DS_Store
+
+# Swaps
+*.swp
+*/*.swp
+*/*/*.swp
