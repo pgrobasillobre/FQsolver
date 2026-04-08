@@ -1,0 +1,126 @@
+#ifndef OUTPUT_HPP
+#define OUTPUT_HPP
+
+#include "density.hpp"
+#include "integrals.hpp"
+#include "nanoparticle.hpp"
+
+#include <optional>
+#include <string>
+#include <fstream>
+#include <stdexcept>
+#include <cstdio>
+#include <string>
+#include <ostream>
+
+
+class Input; // Forward declaration of Input to avoid circular dependency
+
+//----------------------------------------------------------------------
+/// @class Output
+/// @brief Manages output filenames, streams, and formatted printing.
+/// 
+/// Handles writing of results, densities, and diagnostics. Also provides
+/// access to the main output stream.
+class Output
+{
+public:
+    /// @brief Constructor.
+    Output();
+
+    /// @brief Generates the output filename based on the input filename.
+    /// @param in_file The input filename provided by the user.
+    void out_file_fill(const std::string &in_file);
+
+    /// @brief Opens the output file for writing.
+    /// @throws std::runtime_error if the file cannot be opened.
+    void open();
+
+    /// @brief Closes the output file stream.
+    void close();
+
+    /// @brief Prints a standard FQSolver banner to the output stream.
+    void print_banner();
+
+    /// @brief Prints cube density data to the output stream.
+    /// @param target The current target object containing input parameters.
+    /// @param cube The Density object containing data to print.
+    /// @param header Optional custom header for the density section.
+    void print_density(const Target &target, 
+                       const Density &cube, 
+                       std::optional<std::string> header = std::nullopt);
+        
+    /// @brief Prints nanoparticle information.
+    /// @param np Nanoparticle object to print.
+    void print_nanoparticle(const Nanoparticle &np);
+
+    /// @brief Prints results of computed integrals.
+    /// @param target Target configuration.
+    /// @param integrals Integrals object containing computed values.
+    void print_results_integrals(const Target &target, const Integrals &integrals);
+
+    /// @brief Outputs the transition dipole in NMD-compatible format.
+    /// @param infile Name of the source density file.
+    /// @param transdip Transition dipole vector.
+    /// @param center Geometric center of the system.
+    void print_transdip_nmd(const std::string infile, 
+                            const std::array<double, 3>& transdip, 
+                            const std::array<double, 3>& center) const;
+
+    /// @brief Outputs the coordinates of the cube density.
+    /// @param what_dens Label (e.g., "donor", "acceptor").
+    /// @param n_points Number of grid points.
+    /// @param xyz Vector of XYZ coordinates.
+    void print_cube_coordinates(const std::string what_dens,
+                                const int n_points,
+                                const std::vector<std::array<double, 3>>& xyz) const;
+
+    /// @brief Prints nanoparticle coordinates and dipoles, if present.
+    /// @param infile Source file name.
+    /// @param np Nanoparticle object.
+    void print_np_coords_dipoles(const std::string infile, const Nanoparticle& np) const;
+    
+    /// @brief Horizontal separator (80 dashes) used in reports.
+    const std::string sticks = std::string(80, '-');
+
+    /// @brief Returns a reference to the output stream.
+    /// @return The file stream used for output.
+    std::ofstream &stream() const;
+
+    /// @brief Full path or name of the output file.
+    std::string output_filename;
+
+private:
+    /// @brief Prints a density point: index and XYZ.
+    /// @param out The output stream to write to.
+    /// @param i Index of the point.
+    /// @param a X-coordinate.
+    /// @param b Y-coordinate.
+    /// @param c Z-coordinate.
+    void print_formatted_line1(std::ostream &out, int i, double a, double b, double c);
+
+    /// @brief Prints atom name and coordinates (for cube files).
+    /// @param out Output stream.
+    /// @param atom Atom label (e.g., "C").
+    /// @param x X-coordinate.
+    /// @param y Y-coordinate.
+    /// @param z Z-coordinate.
+    void print_formatted_line2(std::ostream &out, const std::string atom, double x, double y, double z) const;
+
+    /// @brief Prints atom name and coordinates (for nanoparticles).
+    /// @param out Output stream.
+    /// @param atom Atom label (e.g., "C").
+    /// @param x X-coordinate.
+    /// @param y Y-coordinate.
+    /// @param z Z-coordinate.
+    void print_formatted_line3(std::ostream &out, const std::string atom, double x, double y, double z);
+
+    /// @brief Format string for printing index and coordinates.
+    std::string format1 = "   {:5d} {:15.7E} {:15.7E} {:15.7E}\n";
+
+    /// @brief File stream used for output (mutable to allow usage in const methods).
+    mutable std::ofstream log_stream; 
+};
+
+#endif // OUTPUT_HPP
+//----------------------------------------------------------------------
