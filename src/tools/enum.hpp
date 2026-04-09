@@ -5,9 +5,7 @@
 enum class TargetMode {
     None,             ///< No calculation selected
     IntegrateCube,    ///< Electron density integration
-    Acceptor_Donor,   ///< Acceptor-Donor coulomb (optional: overlap integral)
-    Acceptor_NP,      ///< Acceptor + Nanoparticle coulomb
-    Acceptor_NP_Donor ///< Acceptor-Donor + Nanoparticle coulomb (optional: overlap integral)
+    Solute_Solvent_Pot_Field, ///< Solute density potential/field at solvent positions
 };
 
 #endif // ENUMS_HPP

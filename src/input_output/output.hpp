@@ -3,7 +3,7 @@
 
 #include "density.hpp"
 #include "integrals.hpp"
-#include "nanoparticle.hpp"
+#include "solvent.hpp"
 
 #include <optional>
 #include <string>
@@ -52,20 +52,12 @@ public:
         
     /// @brief Prints nanoparticle information.
     /// @param np Nanoparticle object to print.
-    void print_nanoparticle(const Nanoparticle &np);
+    //void print_nanoparticle(const Nanoparticle &np);
 
     /// @brief Prints results of computed integrals.
     /// @param target Target configuration.
     /// @param integrals Integrals object containing computed values.
     void print_results_integrals(const Target &target, const Integrals &integrals);
-
-    /// @brief Outputs the transition dipole in NMD-compatible format.
-    /// @param infile Name of the source density file.
-    /// @param transdip Transition dipole vector.
-    /// @param center Geometric center of the system.
-    void print_transdip_nmd(const std::string infile, 
-                            const std::array<double, 3>& transdip, 
-                            const std::array<double, 3>& center) const;
 
     /// @brief Outputs the coordinates of the cube density.
     /// @param what_dens Label (e.g., "donor", "acceptor").
@@ -78,7 +70,7 @@ public:
     /// @brief Prints nanoparticle coordinates and dipoles, if present.
     /// @param infile Source file name.
     /// @param np Nanoparticle object.
-    void print_np_coords_dipoles(const std::string infile, const Nanoparticle& np) const;
+    //void print_np_coords_dipoles(const std::string infile, const Nanoparticle& np) const;
     
     /// @brief Horizontal separator (80 dashes) used in reports.
     const std::string sticks = std::string(80, '-');

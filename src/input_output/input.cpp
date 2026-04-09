@@ -30,12 +30,12 @@ void Input::get_arguments(int argc, char *argv[], Output &out, Target &target)
         parse_arguments(argc, argv, out);
         target.input_filename = input_filename;
 
-        #ifdef _OPENMP
-            bool saw_omp_flag = false;
-            target.n_threads_OMP = 1; // placeholder until we decide
-        #else
-            target.n_threads_OMP = 1; // always 1 without OpenMP
-        #endif
+#ifdef _OPENMP
+        bool saw_omp_flag = false;
+        target.n_threads_OMP = 1; // placeholder until we decide
+#else
+        target.n_threads_OMP = 1; // always 1 without OpenMP
+#endif
 
         // Scan for -omp N (allowed anywhere)
         for (int i = 1; i < argc; ++i)
@@ -48,33 +48,34 @@ void Input::get_arguments(int argc, char *argv[], Output &out, Target &target)
                     throw std::runtime_error("Missing value for -omp: you must specify an integer after -omp");
                 }
 
-                #ifdef _OPENMP
-                    saw_omp_flag = true;
-                    str_manipulation.string_to_int(argv[i + 1], target.n_threads_OMP);
-                    if (target.n_threads_OMP < 1)
-                    {
-                        throw std::runtime_error("Value for -omp must be >= 1");
-                    }
-                    else if (target.n_threads_OMP > omp_get_max_threads())
-                    {
-                        target.n_threads_OMP = omp_get_max_threads();
-                    }
-                #else
-                    // Warn user it’s ignored when OpenMP is off
-                    std::cout << "\n Warning: -omp ignored; binary built without OpenMP.\n" << std::endl;
-                #endif
+#ifdef _OPENMP
+                saw_omp_flag = true;
+                str_manipulation.string_to_int(argv[i + 1], target.n_threads_OMP);
+                if (target.n_threads_OMP < 1)
+                {
+                    throw std::runtime_error("Value for -omp must be >= 1");
+                }
+                else if (target.n_threads_OMP > omp_get_max_threads())
+                {
+                    target.n_threads_OMP = omp_get_max_threads();
+                }
+#else
+                // Warn user it’s ignored when OpenMP is off
+                std::cout << "\n Warning: -omp ignored; binary built without OpenMP.\n"
+                          << std::endl;
+#endif
                 ++i; // skip value
             }
         }
 
-        #ifdef _OPENMP
-            // If no -omp provided, use all available threads
-            if (!saw_omp_flag)
-            {
-                target.n_threads_OMP = omp_get_max_threads();
-            }
-            omp_set_num_threads(std::max(1, target.n_threads_OMP));
-        #endif
+#ifdef _OPENMP
+        // If no -omp provided, use all available threads
+        if (!saw_omp_flag)
+        {
+            target.n_threads_OMP = omp_get_max_threads();
+        }
+        omp_set_num_threads(std::max(1, target.n_threads_OMP));
+#endif
     }
     catch (const std::exception &e)
     {
@@ -172,65 +173,16 @@ void Input::read(Target &target)
         target.integrate_density = true;
     };
     // ========
-    handlers["rotation axys"] = [&](const std::string &value)
+    handlers["density"] = [&](const std::string &value)
     {
-        target.is_rotation_axys_present = true;
-        target.rotation_axys = value;
-
-        // Lowercase the rotation axys and check validity
-        std::transform(target.rotation_axys.begin(), target.rotation_axys.end(), target.rotation_axys.begin(), ::tolower);    
-
-        if (target.rotation_axys != "x" && target.rotation_axys != "y" && target.rotation_axys != "z")
-        {
-            throw std::runtime_error("Rotation axys must be one of: x, y, z");
-        }
+        check_and_store_file(value, target.solute_density_input_file, target.solute_density_file);
+        target.is_cube_density_present = true;
     };
     // ========
-    handlers["acceptor density"] = [&](const std::string &value)
+    handlers["solvent"] = [&](const std::string &value)
     {
-        check_and_store_file(value, target.acceptor_density_input_file, target.acceptor_density_file);
-        target.is_acceptor_density_present = true;
-    };
-    // ========
-    handlers["acceptor transition dipole"] = [&](const std::string &value)
-    {
-        target.is_acceptor_transition_dipole_present = true;
-        check_and_store_transition_dipole(value, target.acceptor_transdip);
-    };
-    // ========
-    handlers["acceptor transition dipole align with"] = [&](const std::string &value)
-    {
-        target.is_acceptor_transition_dipole_align_present = true;
-        check_and_store_transition_dipole(value, target.acceptor_ref_vector);
-
-        target.rotate_acceptor = true;
-    };
-    // ========
-    handlers["donor density"] = [&](const std::string &value)
-    {
-        check_and_store_file(value, target.donor_density_input_file, target.donor_density_file);
-        target.is_donor_density_present = true;
-    };
-    // ========
-    handlers["donor transition dipole"] = [&](const std::string &value)
-    {
-        target.is_donor_transition_dipole_present = true;
-        check_and_store_transition_dipole(value, target.donor_transdip);
-    };
-        // ========
-    handlers["donor transition dipole align with"] = [&](const std::string &value)
-    {
-        target.is_donor_transition_dipole_align_present = true;
-        check_and_store_transition_dipole(value, target.donor_ref_vector);
-
-        target.rotate_donor = true;
-
-    };
-    // ========
-    handlers["nanoparticle"] = [&](const std::string &value)
-    {
-        check_and_store_file(value, target.nanoparticle_input_file, target.nanoparticle_file);
-        target.is_nanoparticle_present = true;
+        check_and_store_file(value, target.solvent_input_file, target.solvent_file);
+        target.is_solvent_present = true;
     };
     // ========
     handlers["cutoff"] = [&](const std::string &value)
@@ -241,12 +193,11 @@ void Input::read(Target &target)
         target.is_cutoff_present = true;
     };
     // ========
-    handlers["spectral overlap"] = [&](const std::string &value)
+    handlers["what"] = [&](const std::string &value)
     {
-        str_manipulation.string_to_float(value, target.spectral_overlap);
-        target.is_spectral_overlap_present = true;
-        if (target.spectral_overlap < 0.0)
-            throw std::runtime_error("Spectral overlap cannot be negative.");
+        str_manipulation.string_what_accepted_entries(value, target.what);
+
+        target.is_what_present = true;
     };
     // ========
     handlers["debug"] = [&](const std::string &value)
@@ -255,14 +206,6 @@ void Input::read(Target &target)
         target.is_debug_present = true;
         if (target.debug < 0.0)
             throw std::runtime_error("Debug mode must be equal or higher than 0.");
-    };
-    // ========
-    handlers["omega_0"] = [&](const std::string &value)
-    {
-        str_manipulation.string_to_float(value, target.omega_0);
-        target.is_omega_0_present = true;
-        if (target.omega_0 < 0.0)
-            throw std::runtime_error("omega_0 cannot be negative");
     };
     // ========
 
@@ -307,8 +250,6 @@ void Input::read(Target &target)
             throw std::runtime_error("Unknown input keyword: '" + key + "'");
         }
     }
-    // Step 6: Determine if nanoparticle must be rotated, if present.
-    if (target.is_nanoparticle_present) target.rotate_nanoparticle = target.rotate_donor;
 
     // Step 7: Determine the target calculation based on input.
     get_target(target);
@@ -331,109 +272,43 @@ void Input::get_target(Target &target)
     //
     // Assign the different targets.
     //
-    if (!target.is_cutoff_present &&
-        !target.omega_0 &&
-        !target.integrate_density)
+    if (!target.integrate_density &&
+        !target.is_cutoff_present)
     {
 
         throw std::runtime_error("Cutoff needed in input.");
     }
-    else if (target.is_rotation_axys_present &&
-             target.rotation_axys.empty())
-    {
 
-        throw std::runtime_error("Rotation axys is present but empty. \n"
-                                 "Please specify the rotation axys (x, y, or z).");
-    }
-    else if ((target.is_acceptor_transition_dipole_present ||
-              target.is_donor_transition_dipole_present)   && 
-              !target.is_rotation_axys_present)
-    {
-        throw std::runtime_error("Transition dipole present but no rotation axys specified. \n"
-                                 "Please specify the rotation axys (x, y, or z).");
-    }
-
-
-    else if (target.is_acceptor_transition_dipole_present &&
-             !target.is_acceptor_transition_dipole_align_present)
-    {
-        throw std::runtime_error("Acceptor transition dipole present but no alignment vector specified.");
-    }
-    else if (target.is_acceptor_transition_dipole_align_present &&
-             !target.is_acceptor_transition_dipole_present)
-    {
-        throw std::runtime_error("Acceptor transition dipole alignment vector present but no transition dipole specified.");
-    }
-
-
-    else if (target.is_donor_transition_dipole_present &&
-             !target.is_donor_transition_dipole_align_present)
-    {
-        throw std::runtime_error("Donor transition dipole present but no alignment vector specified.");
-    }
-    else if (target.is_donor_transition_dipole_align_present &&
-             !target.is_donor_transition_dipole_present)
-    {
-        throw std::runtime_error("Donor transition dipole alignment vector present but no transition dipole specified.");
-    }
-
-
-
-    else if (target.is_rotation_axys_present &&
-             !target.is_acceptor_density_present &&
-             !target.is_donor_density_present &&
-             !target.is_nanoparticle_present)
-    {
-
-        throw std::runtime_error("Rotation axys is present but no acceptor, donor, or nanoparticle density provided.");
-    }
     else if (target.is_cutoff_present && target.cutoff < 0.0)
     {
 
         throw std::runtime_error("Cutoff cannot be negative.");
     }
     else if (target.integrate_density &&
-             (target.is_acceptor_density_present || target.is_donor_density_present || target.is_nanoparticle_present))
+             (target.is_solvent_present || target.is_cube_density_present))
     {
 
-        throw std::runtime_error("You are requesting a cube integration with another type of calculation.");
+        throw std::runtime_error("You are requesting a density integration with another type of calculation.");
     }
     else if (target.integrate_density)
     {
 
         target.mode = TargetMode::IntegrateCube;
     }
-    else if (target.is_acceptor_density_present &&
-             target.is_donor_density_present &&
-             !target.is_nanoparticle_present)
+    else if (target.is_solvent_present &&
+             target.is_cube_density_present &&
+             target.is_solvent_present)
     {
-
-        if (target.is_omega_0_present)
-            target.calc_overlap_int = true;
-        if (!target.is_spectral_overlap_present)
-            throw std::runtime_error("Aceptor-donor calculation requested but no spectral overlap in input.");
-
-        target.mode = TargetMode::Acceptor_Donor;
+        if (!target.is_what_present)
+        {
+            throw std::runtime_error("You must specify what to calculate with the 'what' keyword in the input file.");
+        }
+        else if (target.what == "pot" || target.what == "pot_field")
+        {
+            target.mode = TargetMode::Solute_Solvent_Pot_Field;
+        }
     }
-    else if (target.is_acceptor_density_present &&
-             target.is_nanoparticle_present &&
-             !target.is_donor_density_present)
-    {
 
-        target.mode = TargetMode::Acceptor_NP;
-    }
-    else if (target.is_acceptor_density_present &&
-             target.is_nanoparticle_present &&
-             target.is_donor_density_present)
-    {
-
-        if (target.is_omega_0_present)
-            target.calc_overlap_int = true;
-        if (!target.is_spectral_overlap_present)
-            throw std::runtime_error("Aceptor-NP-donor calculation requested but no spectral overlap in input.");
-
-        target.mode = TargetMode::Acceptor_NP_Donor;
-    }
     else
     {
         target.mode = TargetMode::None;
@@ -476,30 +351,6 @@ void Input::check_and_store_file(
     resolved_field = full_path;
 }
 //----------------------------------------------------------------------
-// Parse and validate a transition dipole vector from input
-void Input::check_and_store_transition_dipole(const std::string &raw_input,
-                                              std::array<double, 
-                                              3> &transdip) const
-{
-    std::istringstream iss(raw_input);
-    double x, y, z;
-
-    if (!(iss >> x >> y >> z)) {
-        throw std::runtime_error(
-            "Invalid transition dipole format: '" + raw_input +
-            "'. Expected three floating-point numbers.");
-    }
-
-    // check for trailing garbage
-    std::string leftover;
-    if (iss >> leftover) {
-        throw std::runtime_error(
-            "Too many values for transition dipole: '" + raw_input + "'");
-    }
-
-    transdip = {x, y, z};
-}
-//----------------------------------------------------------------------
 // Print a formatted summary of input file contents and selected settings
 void Input::print_input_info(const Output &out, const Target &target)
 {
@@ -519,61 +370,31 @@ void Input::print_input_info(const Output &out, const Target &target)
         out.stream() << " " << out.sticks << "\n \n";
         break;
 
-    case TargetMode::Acceptor_Donor:
-        out.stream() << indent << "Calculation --> Acceptor - Donor\n\n";
-        out.stream() << indent << "Acceptor Density File: " << target.acceptor_density_input_file << "\n";
-        out.stream() << indent << "Donor    Density File: " << target.donor_density_input_file << "\n\n";
-        if (!target.calc_overlap_int)
+    case TargetMode::Solute_Solvent_Pot_Field:
+        out.stream() << indent << "Calculation --> Solute Density + Solvent Potential/Field\n\n";
+        out.stream() << indent << "Solute Density File: " << target.solute_density_input_file << "\n";
+        out.stream() << indent << "Solvent Geometry File: " << target.solvent_input_file << "\n\n";
+        if (target.is_cutoff_present)
         {
-            out.stream() << indent << "Overlap Integral     : No\n";
-            out.stream() << indent << "Cutoff               : " << target.cutoff << "   a.u.\n";
-            out.stream() << indent << "Spectral Overlap     : " << target.spectral_overlap << "   a.u.\n\n";
+            out.stream() << indent << "Cutoff               : Yes (" << target.cutoff << " Hartree)\n\n";
         }
         else
         {
-            out.stream() << indent << "Overlap Integral     : Yes\n";
-            out.stream() << indent << "Cutoff               : No\n";
-            out.stream() << indent << "Spectral Overlap     : " << target.spectral_overlap << "   a.u.\n";
-            out.stream() << indent << "Omega_0              : " << target.omega_0 << "   a.u.\n\n";
+            out.stream() << indent << "Cutoff               : No\n\n";
         }
         out.stream() << " " << out.sticks << "\n \n";
-
         break;
 
-    case TargetMode::Acceptor_NP:
-        out.stream() << indent << "Calculation --> Acceptor - NP\n\n";
-        out.stream() << indent << "Acceptor Density File: " << target.acceptor_density_input_file << "\n";
-        out.stream() << indent << "Nanoparticle File    : " << target.nanoparticle_input_file << "\n\n";
+        // case TargetMode::Acceptor_Donor:
+        //     out.stream() << indent << "Calculation --> Acceptor - Donor\n\n";
+        //     out.stream() << indent << "Acceptor Density File: " << target.acceptor_density_input_file << "\n";
+        //     out.stream() << indent << "Donor    Density File: " << target.donor_density_input_file << "\n\n";
 
-        out.stream() << indent << "Overlap Integral     : No\n";
-        out.stream() << indent << "Cutoff               : " << target.cutoff << "   a.u.\n\n";
+        //    out.stream() << indent << "Cutoff               : No\n";
 
-        if (target.calc_overlap_int)
-            throw std::runtime_error("Overlap integral can't be computed for Acceptor - NP option.");
+        //    out.stream() << " " << out.sticks << "\n \n";
 
-        break;
-
-    case TargetMode::Acceptor_NP_Donor:
-        out.stream() << indent << "Calculation --> Acceptor - NP - Donor\n\n";
-        out.stream() << indent << "Acceptor Density File: " << target.acceptor_density_input_file << "\n";
-        out.stream() << indent << "Donor    Density File: " << target.donor_density_input_file << "\n";
-        out.stream() << indent << "Nanoparticle File    : " << target.nanoparticle_input_file << "\n\n";
-        if (!target.calc_overlap_int)
-        {
-            out.stream() << indent << "Overlap Integral     : No\n";
-            out.stream() << indent << "Cutoff               : " << target.cutoff << "   a.u.\n";
-            out.stream() << indent << "Spectral Overlap     : " << target.spectral_overlap << "   a.u.\n\n";
-        }
-        else
-        {
-            out.stream() << indent << "Overlap Integral     : Yes\n";
-            out.stream() << indent << "Cutoff               : No\n";
-            out.stream() << indent << "Omega_0              : " << target.omega_0 << "   a.u.\n";
-            out.stream() << indent << "Spectral Overlap     : " << target.spectral_overlap << "   a.u.\n\n";
-        }
-        out.stream() << " " << out.sticks << "\n \n";
-
-        break;
+        //    break;
 
     case TargetMode::None:
     default:

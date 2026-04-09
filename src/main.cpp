@@ -8,12 +8,12 @@
 #include "algorithm.hpp"
 
 //---------------------------------------------------------------------------
-//                 __________      _____       __               
+//                 __________      _____       __
 //                / ____/ __ \    / ___/____  / /   _____  _____
 //               / /_  / / / /    \__ \/ __ \/ / | / / _ \/ ___/
-//              / __/ / /_/ /    ___/ / /_/ / /| |/ /  __/ /    
-//             /_/    \___\_\   /____/\____/_/ |___/\___/_/     
-//                                                           
+//              / __/ / /_/ /    ___/ / /_/ / /| |/ /  __/ /
+//             /_/    \___\_\   /____/\____/_/ |___/\___/_/
+//
 //---------------------------------------------------------------------------
 //
 //                       Program by Pablo Grobas Illobre
@@ -26,7 +26,7 @@
 /// @brief Main entry point of the FQSolver program.
 ///
 /// This function sets up and coordinates the key components:
-/// - Parses command-line arguments
+/// - Parses input arguments
 /// - Reads and checks input
 /// - Dispatches the appropriate computational algorithm based on the target
 /// - Manages performance timing
@@ -66,8 +66,11 @@ int main(int argc, char *argv[])
         case TargetMode::IntegrateCube:
             algorithm.integrate_density(target);
             break;
-
         
+        case TargetMode::Solute_Solvent_Pot_Field:
+            algorithm.solute_dens_solvent_pot(target);
+            break;
+
         default:
             throw std::runtime_error("No valid calculation target specified in input.");
         }

@@ -1,7 +1,7 @@
 #include "output.hpp"
 #include "parameters.hpp"
 #include "integrals.hpp"
-#include "nanoparticle.hpp"
+#include "solvent.hpp"
 
 #include <iostream>
 #include <filesystem>
@@ -75,17 +75,12 @@ void Output::print_banner()
 void Output::print_density(const Target &target, const Density &cube, std::optional<std::string> header)
 {
 
-    std::string acceptor_header = Parameters::acceptor_header;
-    std::string donor_header = Parameters::donor_header;
+    std::string solute_header = Parameters::solute_header;
     std::string filepath;
 
-    if (header == acceptor_header)
+    if (header == solute_header)
     {
-        filepath = target.acceptor_density_file;
-    }
-    else if (header == donor_header)
-    {
-        filepath = target.donor_density_file;
+        filepath = target.solute_density_file;
     }
     else
     {
@@ -131,46 +126,6 @@ void Output::print_density(const Target &target, const Density &cube, std::optio
                               cube.z[i] * Parameters::ToAng);
     }
 
-    // Print rotated transition dipole and angle, if requested
-    if (header == acceptor_header && target.rotate_acceptor)
-    {
-        // INPUT Transition density dipole
-        log_stream << "\n   INPUT   Transition density dipole (x,y,z): "
-                   << std::fixed << std::setw(10) << std::setprecision(5) << target.acceptor_transdip[0] << " "
-                   << std::setw(10) << target.acceptor_transdip[1] << " "
-                   << std::setw(10) << target.acceptor_transdip[2] << "\n\n";
-
-        // ROTATED Transition density dipole
-        log_stream << "   ROTATED Transition density dipole (x,y,z): "
-                   << std::fixed << std::setw(10) << std::setprecision(5) << target.acceptor_transdip_rot[0] << " "
-                   << std::setw(10) << target.acceptor_transdip_rot[1] << " "
-                   << std::setw(10) << target.acceptor_transdip_rot[2] << "\n\n";
-
-        // Alignment angle
-        log_stream << "   Alignment angle: "
-                   << std::fixed << std::setw(8) << std::setprecision(3) << target.acceptor_density_rotation_angle_check * Parameters::to_degrees
-                   << " °\n";
-    }
-    else if (header == donor_header && target.rotate_donor)
-    {
-        // INPUT Transition density dipole
-        log_stream << "\n   INPUT   Transition density dipole (x,y,z): "
-                   << std::fixed << std::setw(10) << std::setprecision(5) << target.donor_transdip[0] << " "
-                   << std::setw(10) << target.donor_transdip[1] << " "
-                   << std::setw(10) << target.donor_transdip[2] << "\n\n";
-
-        // ROTATED Transition density dipole
-        log_stream << "   ROTATED Transition density dipole (x,y,z): "
-                   << std::fixed << std::setw(10) << std::setprecision(5) << target.donor_transdip_rot[0] << " "
-                   << std::setw(10) << target.donor_transdip_rot[1] << " "
-                   << std::setw(10) << target.donor_transdip_rot[2] << "\n\n";
-
-        // Alignment angle
-        log_stream << "   Alignment angle: "
-                   << std::fixed << std::setw(8) << std::setprecision(3) << target.donor_density_rotation_angle_check * Parameters::to_degrees
-                   << " °\n";
-    }
-
     if (cube.integral > 0.0)
     {
         log_stream << " \n";
@@ -183,26 +138,26 @@ void Output::print_density(const Target &target, const Density &cube, std::optio
 }
 //----------------------------------------------------------------------
 /// Logs nanoparticle model, geometry, and atomic coordinates.
-void Output::print_nanoparticle(const Nanoparticle &np)
-{
-    log_stream << std::string(23, ' ') << "Nanoparticle Model   : " << np.nanoparticle_model << "\n\n";
-    log_stream << sticks << "\n\n";
-    log_stream << std::string(28, ' ') << "Nanoparticle Geometry (Å)                    \n \n";
-    log_stream << " " << sticks << "\n ";
-    log_stream << std::string(12, ' ') << "Atom" << std::string(15, ' ') << "X" << std::string(19, ' ') << "Y" << std::string(19, ' ') << "Z" << "\n";
-    log_stream << " " << sticks << "\n \n";
-
-    // Print nanoparticle properties
-    for (int i = 0; i < np.natoms; ++i)
-    {
-        print_formatted_line3(log_stream, std::string("Xx"),
-                              np.xyz[i][0] * Parameters::ToAng,
-                              np.xyz[i][1] * Parameters::ToAng,
-                              np.xyz[i][2] * Parameters::ToAng);
-    }
-
-    log_stream << " \n " << sticks << "\n\n";
-}
+// void Output::print_nanoparticle(const Nanoparticle &np)
+// {
+//     log_stream << std::string(23, ' ') << "Nanoparticle Model   : " << np.nanoparticle_model << "\n\n";
+//     log_stream << sticks << "\n\n";
+//     log_stream << std::string(28, ' ') << "Nanoparticle Geometry (Å)                    \n \n";
+//     log_stream << " " << sticks << "\n ";
+//     log_stream << std::string(12, ' ') << "Atom" << std::string(15, ' ') << "X" << std::string(19, ' ') << "Y" << std::string(19, ' ') << "Z" << "\n";
+//     log_stream << " " << sticks << "\n \n";
+//
+//     // Print nanoparticle properties
+//     for (int i = 0; i < np.natoms; ++i)
+//     {
+//         print_formatted_line3(log_stream, std::string("Xx"),
+//                               np.xyz[i][0] * Parameters::ToAng,
+//                               np.xyz[i][1] * Parameters::ToAng,
+//                               np.xyz[i][2] * Parameters::ToAng);
+//     }
+//
+//     log_stream << " \n " << sticks << "\n\n";
+// }
 //----------------------------------------------------------------------
 // Prints a single formatted line for grid or voxel information (used in density headers).
 void Output::print_formatted_line1(std::ostream &out, int i, double a, double b, double c)
@@ -242,97 +197,57 @@ void Output::print_results_integrals(const Target &target, const Integrals &inte
     switch (target.mode)
     {
 
-    case TargetMode::Acceptor_Donor:
+        // case TargetMode::Acceptor_Donor:
 
-        log_stream << std::string(5, ' ') << "Acceptor-Donor Coulomb  : " << std::fixed << std::setw(25) << std::setprecision(16) << integrals.coulomb_acceptor_donor << "  a.u.\n";
-        if (target.calc_overlap_int)
-        {
-            log_stream << std::string(5, ' ') << "Acceptor-Donor Overlap  : " << std::fixed << std::setw(25) << std::setprecision(16) << integrals.overlap_acceptor_donor << "  a.u.\n";
-        }
-        v_tot[0] = integrals.coulomb_acceptor_donor + integrals.overlap_acceptor_donor;
+        //    log_stream << std::string(5, ' ') << "Acceptor-Donor Coulomb  : " << std::fixed << std::setw(25) << std::setprecision(16) << integrals.coulomb_acceptor_donor << "  a.u.\n";
 
-        v_mod = std::sqrt(std::inner_product(v_tot.begin(), v_tot.end(), v_tot.begin(), 0.0));
+        //    v_tot[0] = integrals.coulomb_acceptor_donor + integrals.overlap_acceptor_donor;
 
-        log_stream << std::string(37, ' ') << std::string(26, '-') << "\n";
-        log_stream
-            << std::string(5, ' ') << "Total Potential         : " << std::fixed << std::setw(25) << std::setprecision(16) << v_tot[0] << "  a.u.\n\n";
-        log_stream << std::string(5, ' ') << "Total Potential Modulus : " << std::fixed << std::setw(25) << std::setprecision(16) << v_mod << "  a.u.\n\n";
+        //    v_mod = std::sqrt(std::inner_product(v_tot.begin(), v_tot.end(), v_tot.begin(), 0.0));
 
-        log_stream << std::string(5, ' ') << "Keet :" << std::fixed << std::setw(25) << std::setprecision(16)
-                   << 2.0 * Parameters::pi * (v_mod * v_mod) * target.spectral_overlap << "  a.u.\n\n";
+        //    log_stream << std::string(37, ' ') << std::string(26, '-') << "\n";
+        //    log_stream
+        //        << std::string(5, ' ') << "Total Potential         : " << std::fixed << std::setw(25) << std::setprecision(16) << v_tot[0] << "  a.u.\n\n";
+        //    log_stream << std::string(5, ' ') << "Total Potential Modulus : " << std::fixed << std::setw(25) << std::setprecision(16) << v_mod << "  a.u.\n\n";
 
-        log_stream << " " << sticks << "\n\n";
-        log_stream.flush();
+        //    log_stream << " " << sticks << "\n\n";
+        //    log_stream.flush();
 
-        break;
+        //    break;
 
-    case TargetMode::Acceptor_NP:
+    case TargetMode::Solute_Solvent_Pot_Field:
 
-        log_stream << std::string(5, ' ') << "Acceptor-NP Interaction : " << std::fixed << std::setw(25) << std::setprecision(16) << integrals.overlap_acceptor_nanoparticle[0] << " + " << integrals.overlap_acceptor_nanoparticle[1] << " i  a.u.\n\n";
-        log_stream << " " << sticks << "\n\n";
-        log_stream.flush();
+        // log_stream << std::string(5, ' ') << "Acceptor-NP Interaction : " << std::fixed << std::setw(25) << std::setprecision(16) << integrals.overlap_acceptor_nanoparticle[0] << " + " << integrals.overlap_acceptor_nanoparticle[1] << " i  a.u.\n\n";
+        // log_stream << " " << sticks << "\n\n";
+        // log_stream.flush();
 
-        break;
+        // break;
 
-    case TargetMode::Acceptor_NP_Donor:
+        // case TargetMode::Acceptor_NP_Donor:
 
-        log_stream << std::string(5, ' ') << "Acceptor-Donor Coulomb  : " << std::fixed << std::setw(25) << std::setprecision(16) << integrals.coulomb_acceptor_donor << "  a.u.\n";
-        if (target.calc_overlap_int)
-        {
-            log_stream << std::string(5, ' ') << "Acceptor-Donor Overlap  : " << std::fixed << std::setw(25) << std::setprecision(16) << integrals.overlap_acceptor_donor << "  a.u.\n";
-        }
+        //    log_stream << std::string(5, ' ') << "Acceptor-Donor Coulomb  : " << std::fixed << std::setw(25) << std::setprecision(16) << integrals.coulomb_acceptor_donor << "  a.u.\n";
 
-        log_stream << std::string(5, ' ') << "Acceptor-NP Interaction : " << std::fixed << std::setw(25) << std::setprecision(16) << integrals.overlap_acceptor_nanoparticle[0] << " + " << integrals.overlap_acceptor_nanoparticle[1] << " i  a.u.\n";
-        log_stream.flush();
+        //    log_stream << std::string(5, ' ') << "Acceptor-NP Interaction : " << std::fixed << std::setw(25) << std::setprecision(16) << integrals.overlap_acceptor_nanoparticle[0] << " + " << integrals.overlap_acceptor_nanoparticle[1] << " i  a.u.\n";
+        //    log_stream.flush();
 
-        v_tot[0] = integrals.coulomb_acceptor_donor + integrals.overlap_acceptor_donor + integrals.overlap_acceptor_nanoparticle[0];
-        v_tot[1] = integrals.overlap_acceptor_nanoparticle[1];
+        //    v_tot[0] = integrals.coulomb_acceptor_donor + integrals.overlap_acceptor_donor + integrals.overlap_acceptor_nanoparticle[0];
+        //    v_tot[1] = integrals.overlap_acceptor_nanoparticle[1];
 
-        v_mod = std::sqrt(std::inner_product(v_tot.begin(), v_tot.end(), v_tot.begin(), 0.0));
+        //    v_mod = std::sqrt(std::inner_product(v_tot.begin(), v_tot.end(), v_tot.begin(), 0.0));
 
-        log_stream << std::string(37, ' ') << std::string(26, '-') << "\n";
-        log_stream << std::string(5, ' ') << "Total Potential         : " << std::fixed << std::setw(25) << std::setprecision(16) << v_tot[0] << " + " << v_tot[1] << " i  a.u.\n\n";
-        log_stream << std::string(5, ' ') << "Total Potential Modulus : " << std::fixed << std::setw(25) << std::setprecision(16) << v_mod << "  a.u.\n\n";
+        //    log_stream << std::string(37, ' ') << std::string(26, '-') << "\n";
+        //    log_stream << std::string(5, ' ') << "Total Potential         : " << std::fixed << std::setw(25) << std::setprecision(16) << v_tot[0] << " + " << v_tot[1] << " i  a.u.\n\n";
+        //    log_stream << std::string(5, ' ') << "Total Potential Modulus : " << std::fixed << std::setw(25) << std::setprecision(16) << v_mod << "  a.u.\n\n";
 
-        log_stream << std::string(5, ' ') << "Keet :" << std::fixed << std::setw(25) << std::setprecision(16)
-                   << 2.0 * Parameters::pi * (v_mod * v_mod) * target.spectral_overlap << "  a.u.\n\n";
+        //    log_stream << " " << sticks << "\n\n";
+        //    log_stream.flush();
 
-        log_stream << " " << sticks << "\n\n";
-        log_stream.flush();
-
-        break;
+        //    break;
 
     case TargetMode::None:
     default:
         throw std::runtime_error("No valid calculation target specified in input.");
     }
-}
-//----------------------------------------------------------------------
-// Writes transition dipole and center to .nmd format (used for visualization).
-void Output::print_transdip_nmd(const std::string infile,
-                                const std::array<double, 3> &transdip,
-                                const std::array<double, 3> &center) const
-{
-
-    double ToAng = Parameters::ToAng;
-
-    std::ofstream nmdfile(infile + ".nmd", std::ios::out);
-    if (!nmdfile)
-    {
-        throw std::runtime_error("Cannot open file: " + infile + ".nmd");
-    }
-
-    nmdfile << "coordinates  "
-            << std::fixed << std::setprecision(5)
-            << std::setw(10) << center[0] * ToAng << "  "
-            << std::setw(10) << center[1] * ToAng << "  "
-            << std::setw(10) << center[2] * ToAng << '\n';
-
-    nmdfile << "mode 1"
-            << std::fixed << std::setprecision(16)
-            << std::setw(25) << transdip[0] << "  "
-            << std::setw(25) << transdip[1] << "  "
-            << std::setw(25) << transdip[2] << '\n';
 }
 //----------------------------------------------------------------------
 // Writes cube point XYZ coordinates to a debug .xyz file.
@@ -363,86 +278,86 @@ void Output::print_cube_coordinates(const std::string what_dens,
 //----------------------------------------------------------------------
 // Writes nanoparticle atom positions to .xyz file and dipole data to .nmd files.
 // Includes real and imaginary components if available.
-void Output::print_np_coords_dipoles(const std::string infile, const Nanoparticle &np) const
-{
-    double ToAng = Parameters::ToAng;
-
-    std::ofstream npfile(infile + ".xyz", std::ios::out);
-    if (!npfile)
-    {
-        throw std::runtime_error("Cannot open file: " + infile + ".xyz");
-    }
-
-    npfile << np.natoms << "\n";
-    npfile << "NP coordinates\n";
-
-    for (int i = 0; i < np.natoms; ++i)
-    {
-        print_formatted_line2(npfile, "Xx",
-                              np.xyz[i][0] * ToAng,
-                              np.xyz[i][1] * ToAng,
-                              np.xyz[i][2] * ToAng);
-    }
-
-    npfile.close();
-
-    //
-    // Print dipoles, if present
-    //
-    if (np.charges_and_dipoles)
-    {
-
-        //
-        // Real part
-        //
-        std::ofstream dip_re(infile + "_re.nmd", std::ios::out);
-        if (!dip_re)
-        {
-            throw std::runtime_error("Cannot open file: " + infile + ".nmd");
-        }
-
-        dip_re << "coordinates";
-        for (int i = 0; i < np.natoms; ++i)
-        {
-            char line[100];
-            std::snprintf(line, sizeof(line), "%10.5f  %10.5f  %10.5f  ", np.xyz[i][0] * ToAng, np.xyz[i][1] * ToAng, np.xyz[i][2] * ToAng);
-            dip_re << line;
-        }
-        dip_re << "\nmode 1";
-        for (int i = 0; i < np.natoms; ++i)
-        {
-            char line[100];
-            std::snprintf(line, sizeof(line), "%10.5f  %10.5f  %10.5f  ", np.mu[i][0], np.mu[i][1], np.mu[i][2]);
-            dip_re << line;
-        }
-        dip_re << "\n";
-        dip_re.close();
-
-        //
-        // Imaginary part
-        //
-        std::ofstream dip_im(infile + "_im.nmd", std::ios::out);
-        if (!dip_im)
-        {
-            throw std::runtime_error("Cannot open file: " + infile + ".nmd");
-        }
-
-        dip_im << "coordinates";
-        for (int i = 0; i < np.natoms; ++i)
-        {
-            char line[100];
-            std::snprintf(line, sizeof(line), "%10.5f  %10.5f  %10.5f  ", np.xyz[i][0] * ToAng, np.xyz[i][1] * ToAng, np.xyz[i][2] * ToAng);
-            dip_im << line;
-        }
-        dip_im << "\nmode 1";
-        for (int i = 0; i < np.natoms; ++i)
-        {
-            char line[100];
-            std::snprintf(line, sizeof(line), "%10.5f  %10.5f  %10.5f  ", np.mu[i][3], np.mu[i][4], np.mu[i][5]);
-            dip_im << line;
-        }
-        dip_im << "\n";
-        dip_im.close();
-    }
-}
+//void Output::print_np_coords_dipoles(const std::string infile, const Nanoparticle &np) const
+//{
+//    double ToAng = Parameters::ToAng;
+//
+//    std::ofstream npfile(infile + ".xyz", std::ios::out);
+//    if (!npfile)
+//    {
+//        throw std::runtime_error("Cannot open file: " + infile + ".xyz");
+//    }
+//
+//    npfile << np.natoms << "\n";
+//    npfile << "NP coordinates\n";
+//
+//    for (int i = 0; i < np.natoms; ++i)
+//    {
+//        print_formatted_line2(npfile, "Xx",
+//                              np.xyz[i][0] * ToAng,
+//                              np.xyz[i][1] * ToAng,
+//                              np.xyz[i][2] * ToAng);
+//    }
+//
+//    npfile.close();
+//
+//    //
+//    // Print dipoles, if present
+//    //
+//    if (np.charges_and_dipoles)
+//    {
+//
+//        //
+//        // Real part
+//        //
+//        std::ofstream dip_re(infile + "_re.nmd", std::ios::out);
+//        if (!dip_re)
+//        {
+//            throw std::runtime_error("Cannot open file: " + infile + ".nmd");
+//        }
+//
+//        dip_re << "coordinates";
+//        for (int i = 0; i < np.natoms; ++i)
+//        {
+//            char line[100];
+//            std::snprintf(line, sizeof(line), "%10.5f  %10.5f  %10.5f  ", np.xyz[i][0] * ToAng, np.xyz[i][1] * ToAng, np.xyz[i][2] * ToAng);
+//            dip_re << line;
+//        }
+//        dip_re << "\nmode 1";
+//        for (int i = 0; i < np.natoms; ++i)
+//        {
+//            char line[100];
+//            std::snprintf(line, sizeof(line), "%10.5f  %10.5f  %10.5f  ", np.mu[i][0], np.mu[i][1], np.mu[i][2]);
+//            dip_re << line;
+//        }
+//        dip_re << "\n";
+//        dip_re.close();
+//
+//        //
+//        // Imaginary part
+//        //
+//        std::ofstream dip_im(infile + "_im.nmd", std::ios::out);
+//        if (!dip_im)
+//        {
+//            throw std::runtime_error("Cannot open file: " + infile + ".nmd");
+//        }
+//
+//        dip_im << "coordinates";
+//        for (int i = 0; i < np.natoms; ++i)
+//        {
+//            char line[100];
+//            std::snprintf(line, sizeof(line), "%10.5f  %10.5f  %10.5f  ", np.xyz[i][0] * ToAng, np.xyz[i][1] * ToAng, np.xyz[i][2] * ToAng);
+//            dip_im << line;
+//        }
+//        dip_im << "\nmode 1";
+//        for (int i = 0; i < np.natoms; ++i)
+//        {
+//            char line[100];
+//            std::snprintf(line, sizeof(line), "%10.5f  %10.5f  %10.5f  ", np.mu[i][3], np.mu[i][4], np.mu[i][5]);
+//            dip_im << line;
+//        }
+//        dip_im << "\n";
+//        dip_im.close();
+//    }
+//}
 //----------------------------------------------------------------------

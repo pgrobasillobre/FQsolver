@@ -79,12 +79,6 @@ private:
                               std::string& input_field,
                               std::string& resolved_field) const;
 
-    /// @brief Parses and stores a transition dipole from the input file.
-    /// @param raw_input String line containing dipole vector components.
-    /// @param transdip Reference to array that will store the parsed vector.
-    void check_and_store_transition_dipole(const std::string& raw_input,
-                                           std::array<double, 
-                                           3>& transdip) const;
 };
 
 #endif // INPUT_HPP

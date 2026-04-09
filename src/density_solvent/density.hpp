@@ -75,37 +75,6 @@ private:
     /// @return Element symbol (e.g., "H", "He", "C").
     std::string map_atomic_number_to_label(int Z) const;
 
-    /// @brief Rotates the transition dipole moment based on the reference vector.
-    /// @param target   Input descriptor (provides orientation info).
-    /// @param out      Output/logging sink.
-    /// @param what_dens Role tag used for context-dependent choices.
-    void rotate_transition_dipole(Target &target, const Output & out, const std::string& what_dens);
-
-    /// @brief Applies rotation to cube coordinates based on the target’s theta (or similar) angle.
-    /// @param target   Input descriptor providing rotation parameters.
-    /// @param out      Output/logging sink.
-    /// @param what_dens Role tag used for context-dependent choices.
-    void rotate_cube_coordinates(const Target &target, const Output & out, const std::string& what_dens);
-
-    /// @brief Computes the angle between 3D vectors.
-    /// @param vec1 First vector.
-    /// @param vec2 Second vector.
-    /// @return Angle in radians.
-    double compute_angle_between_vectors(const std::array<double, 3>& vec1, const std::array<double, 3>& vec2) const;
-
-    /// @brief Rotates a 3D vector by an angle around a named axis.
-    /// @param vec   Vector to rotate.
-    /// @param angle Rotation angle in radians.
-    /// @param axis  Axis label: "x", "y", or "z".
-    /// @return Rotated vector.
-    std::array<double, 3> rotate_vector(const std::array<double, 3>& vec, const double angle, const std::string& axis) const;
-
-    /// @brief Rotates all reduced density coordinates (xyz) by an angle around a named axis.
-    /// @param angle Rotation angle in radians.
-    /// @param axis  Axis label: "x", "y", or "z".
-    /// @return Rotated coordinates.
-    std::vector<std::array<double, 3>> rotate_density(const double angle, 
-                                                      const std::string& axis) const;
 };
 
 #endif // DENSITY_HPP

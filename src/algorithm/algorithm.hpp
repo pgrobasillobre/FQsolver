@@ -5,16 +5,16 @@
 #include "output.hpp"
 #include "density.hpp"
 #include "integrals.hpp"
-#include "nanoparticle.hpp"
+#include "solvent.hpp"
 
 //----------------------------------------------------------------------
 /// @class Algorithm
-/// @brief High-level driver for electronic energy transfer calculations
+/// @brief High-level driver for potential, field, and FQ calculations.
 ///
 /// @details
-/// The Algorithm class orchestrates the workflow of density integration,
-/// donor–acceptor coupling, nanoparticle–acceptor interactions, and 
-/// nanoparticle-mediated transfer rates. 
+/// The Algorithm class orchestrates the workflow of FQSolver,
+/// including reading input data, performing density integrations,
+/// computing potentials, fields, charges, and outputting results.
 class Algorithm
 {
 public:
@@ -22,7 +22,6 @@ public:
     /// @param out    Output handler for logging and reporting.
     /// @param target Target system to be used in calculations.
     Algorithm(Output &out, Target &target);
-
 
     /// @brief Integrates the electron density from a cube file.
     /// @param target Target system providing the cube file name and calculation type.
@@ -32,34 +31,19 @@ public:
     /// @brief Compute electronic energy transfer rate between donor and acceptor.
     ///
 
-    /// @brief Computes the electronic energy transfer rate 
-    ///        between donor and acceptor.
-    /// @param target Target system containing donor and acceptor file names 
+    /// @brief Computes the potential at the solvent coordinates from a solute density.
+    /// @param target Target system containing solute and solvent file names
     ///        and calculation type.
-    void acceptor_donor(Target &target);
-
-    /// @brief Computes the coupling between an acceptor and a nanoparticle.
-    /// @param target Target system containing acceptor and nanoparticle file names
-    ///        and calculation type.
-    void acceptor_np(Target &target);
-
- 
-    /// @brief Computes the donor–acceptor electronic energy transfer rate
-    ///        mediated by a nanoparticle.
-    /// @param target Target system containing donor, acceptor, and nanoparticle file names
-    ///        and calculation type.
-    void acceptor_np_donor(Target &target);
+    void solute_dens_solvent_pot(Target &target);
 
 private:
-    Output &out;        ///< Reference to output handler.
-    Target &target;     ///< Reference to target system.
-    Density cube;       ///< General-purpose density object.
-    Density cube_acceptor; ///< Density associated with the acceptor.
-    Density cube_donor;    ///< Density associated with the donor.
-    Integrals integrals;   ///< Integral evaluator for couplings.
-    Nanoparticle np;       ///< Nanoparticle representation.
+    Output &out;         ///< Reference to output handler.
+    Target &target;      ///< Reference to target system.
+    Density cube;        ///< General-purpose density object.
+    Density cube_solute; ///< Density associated with the solute
+    Integrals integrals; ///< Integral evaluator for couplings.
+    // Solvent solv;     ///< Solvent representation.
 };
 
 #endif
 //----------------------------------------------------------------------
-
