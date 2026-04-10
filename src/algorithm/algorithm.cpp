@@ -29,7 +29,7 @@ void Algorithm::integrate_density(Target &target)
 // 2) print characteristics
 // 3) compute integrals
 // 4) print results
-void Algorithm::solute_dens_solvent_pot(Target &target)
+void Algorithm::solute_dens_solvent_pot_fld(Target &target)
 {
     //
     //  Read input files
@@ -44,9 +44,9 @@ void Algorithm::solute_dens_solvent_pot(Target &target)
 
     out.print_density(target, cube_solute, Parameters::solute_header);
     //
-    //  Compute integrals
+    //  Compute potential/field at solvent coordinates
     //
-    //    integrals.acceptor_np(target, cube_acceptor, np);
+    integrals.solute_solvent_pot_fld(target, cube_solute, solv);
     //
     //  Print results
     //

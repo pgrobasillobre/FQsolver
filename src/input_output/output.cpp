@@ -148,9 +148,9 @@ void Output::print_solvent(const Target &target, const Solvent &solv)
     for (int i = 0; i < solv.natoms; ++i)
     {
         print_formatted_line2(log_stream, std::string(solv.atomic_label[i]),
-                              solv.xyz[i][0],
-                              solv.xyz[i][1],
-                              solv.xyz[i][2]);
+                              solv.xyz[i][0]*Parameters::ToAng,
+                              solv.xyz[i][1]*Parameters::ToAng,
+                              solv.xyz[i][2]*Parameters::ToAng);
     }
     log_stream << " \n " << sticks << "\n\n";
 }
@@ -211,7 +211,7 @@ void Output::print_results_integrals(const Target &target, const Integrals &inte
 
         //    break;
 
-    case TargetMode::Solute_Solvent_Pot_Field:
+    case TargetMode::Solute_Solvent_Pot_Fld:
 
         // log_stream << std::string(5, ' ') << "Acceptor-NP Interaction : " << std::fixed << std::setw(25) << std::setprecision(16) << integrals.overlap_acceptor_nanoparticle[0] << " + " << integrals.overlap_acceptor_nanoparticle[1] << " i  a.u.\n\n";
         // log_stream << " " << sticks << "\n\n";

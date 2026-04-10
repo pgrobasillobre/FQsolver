@@ -12,110 +12,117 @@
 //----------------------------------------------------------------------
 // Solute-solvent potential and field:
 //
- void Integrals::solute_solvent_pot_field(const Target &target, const Density &solute, const Solvent &solv)
+void Integrals::solute_solvent_pot_fld(const Target &target, const Density &solute, const Solvent &solv)
 {
-//  const int n_acc = acceptor.n_points_reduced;
-//  const int n_np = np.natoms;
-//
-//  const auto &rho_acc = acceptor.rho_reduced;
-//  const auto &xyz_acc = acceptor.xyz;
-//  const auto &xyz_np = np.xyz;
-//
-//  const double inv_QMscrnFact = 1.0 / Parameters::QMscrnFact;
-//  const double sqrt_pi = Parameters::sqrt_pi;
-//
-//  if (np.charges)
-//  {
-//    const auto &mm_q = np.q; // vector<array<double,2>>
-//
-//    double acceptor_np_int_re_q = 0.0;
-//    double acceptor_np_int_im_q = 0.0;
-//
-//// Parallel computation of the integrals
-// #pragma omp parallel for collapse(2) schedule(static) default(none)     \
-//     shared(n_acc, n_np, xyz_acc, xyz_np, rho_acc, mm_q, inv_QMscrnFact) \
-//     reduction(+ : acceptor_np_int_re_q, acceptor_np_int_im_q)
-//     for (int i = 0; i < n_acc; ++i)
-//     {
-//       for (int j = 0; j < n_np; ++j)
-//       {
-//
-//         const double dx = xyz_acc[i][0] - xyz_np[j][0];
-//         const double dy = xyz_acc[i][1] - xyz_np[j][1];
-//         const double dz = xyz_acc[i][2] - xyz_np[j][2];
-//
-//         const double dist2 = dx * dx + dy * dy + dz * dz;
-//         const double dist = std::sqrt(dist2);
-//
-//         if (dist <= 1.0e-14)
-//           continue;
-//
-//         const double invdist = 1.0 / dist;
-//         const double sf = dist * inv_QMscrnFact;
-//         const double screen_pot = std::erf(sf);
-//
-//         // Change sign: ADF prints densities with opposite sign
-//         acceptor_np_int_re_q += -rho_acc[i] * mm_q[j][0] * invdist * screen_pot;
-//         acceptor_np_int_im_q += -rho_acc[i] * mm_q[j][1] * invdist * screen_pot;
-//       }
-//     }
-//
-//     overlap_acceptor_nanoparticle[0] = acceptor_np_int_re_q;
-//     overlap_acceptor_nanoparticle[1] = acceptor_np_int_im_q;
-//   }
-//   else if (np.charges_and_dipoles)
-//   {
-//     const auto &mm_q = np.q;   // vector<array<double,2>>
-//     const auto &mm_mu = np.mu; // vector<array<double,6>>
-//
-//     double acceptor_np_int_re_q = 0.0;
-//     double acceptor_np_int_im_q = 0.0;
-//     double acceptor_np_int_re_mu = 0.0;
-//     double acceptor_np_int_im_mu = 0.0;
-//
-//// Parallel computation of the integrals
-// #pragma omp parallel for collapse(2) schedule(static) default(none)                     \
-//     shared(n_acc, n_np, xyz_acc, xyz_np, rho_acc, mm_q, inv_QMscrnFact, sqrt_pi, mm_mu) \
-//     reduction(+ : acceptor_np_int_re_q, acceptor_np_int_im_q,                           \
-//                   acceptor_np_int_re_mu, acceptor_np_int_im_mu)
-//     for (int i = 0; i < n_acc; ++i)
-//     {
-//       for (int j = 0; j < n_np; ++j)
-//       {
-//         const double dx = xyz_acc[i][0] - xyz_np[j][0];
-//         const double dy = xyz_acc[i][1] - xyz_np[j][1];
-//         const double dz = xyz_acc[i][2] - xyz_np[j][2];
-//
-//         const double dist2 = dx * dx + dy * dy + dz * dz;
-//         const double dist = std::sqrt(dist2);
-//
-//         if (dist <= 1.0e-14)
-//           continue;
-//
-//         const double invdist = 1.0 / dist;
-//         const double sf = dist * inv_QMscrnFact;
-//         const double screen_pot = std::erf(sf);
-//
-//         const double sf1 = (2.0 * sf / sqrt_pi) * std::exp(-sf * sf);
-//         const double screen_fld = screen_pot - sf1;
-//
-//         // Change sign: ADF prints densities with opposite sign
-//         acceptor_np_int_re_q += -rho_acc[i] * mm_q[j][0] * invdist * screen_pot;
-//         acceptor_np_int_im_q += -rho_acc[i] * mm_q[j][1] * invdist * screen_pot;
-//
-//         acceptor_np_int_re_mu += (-rho_acc[i] * mm_mu[j][0] * dx * (invdist * invdist * invdist) * screen_fld - rho_acc[i] * mm_mu[j][1] * dy * (invdist * invdist * invdist) * screen_fld - rho_acc[i] * mm_mu[j][2] * dz * (invdist * invdist * invdist) * screen_fld);
-//
-//         acceptor_np_int_im_mu += (-rho_acc[i] * mm_mu[j][3] * dx * (invdist * invdist * invdist) * screen_fld - rho_acc[i] * mm_mu[j][4] * dy * (invdist * invdist * invdist) * screen_fld - rho_acc[i] * mm_mu[j][5] * dz * (invdist * invdist * invdist) * screen_fld);
-//       }
-//     }
-//
-//     overlap_acceptor_nanoparticle[0] = acceptor_np_int_re_q + acceptor_np_int_re_mu;
-//     overlap_acceptor_nanoparticle[1] = acceptor_np_int_im_q + acceptor_np_int_im_mu;
-//   }
-//   else
-//   {
-//     throw std::runtime_error(
-//         "Nanoparticle model not recognized. Check input file: " + target.nanoparticle_input_file);
-//   }
- }
+
+  // This function computes the potential/field at the solvent coordinates due to the solute density.
+  // This involves evaluating integrals of the form:
+  //
+  // V(r) = ∫ ρ(r') / |r - r'| dr'
+  // E(r) = -∇V(r)
+  //
+  // where ρ(r') is the solute electron density, and r are the coordinates of the solvent atoms.
+  //
+
+  // Retrieve the number of points in the solute density and the number of solvent atoms
+  const int n_solute = solute.n_points_reduced;
+  const int n_solvent = solv.natoms;
+
+  // Retrieve the reduced solute density values and their coordinates, and the solvent coordinates
+  const auto &rho_solute = solute.rho_reduced;
+  const auto &xyz_solute = solute.xyz;
+  const auto &xyz_solvent = solv.xyz;
+
+  // Precompute constants for the screened Coulomb potential
+  const double inv_QMscrnFact = 1.0 / Parameters::QMscrnFact;
+  const double sqrt_pi = Parameters::sqrt_pi;
+
+  if (target.what == "potential")
+  {
+    // Compute only the potential at the solvent coordinates
+     // #pragma omp parallel for schedule(static) default(none)                                       \
+    shared(n_solute, n_solvent, xyz_solute, xyz_solvent, rho_solute, inv_QMscrnFact, sqrt_pi) \
+    reduction(+ : solv_pot)
+
+    for (int i = 0; i < n_solvent; ++i)
+    {
+      std::vector<std::array<double, 1>> solv_pot(n_solvent, {0.0});
+
+      double pot_i = 0.0;
+      for (int j = 0; j < n_solute; ++j)
+      {
+        const double dx = xyz_solvent[i][0] - xyz_solute[j][0];
+        const double dy = xyz_solvent[i][1] - xyz_solute[j][1];
+        const double dz = xyz_solvent[i][2] - xyz_solute[j][2];
+
+        const double dist2 = dx * dx + dy * dy + dz * dz;
+        const double dist = std::sqrt(dist2);
+
+        if (dist <= 1.0e-14)
+          continue;
+
+        const double invdist = 1.0 / dist;
+
+        // Print invdist for debugging
+        std::cout << "For atom #" << i << ": Inverse distance: " << invdist << std::endl;
+
+        const double sf = dist * inv_QMscrnFact;
+        const double screen_pot = std::erf(sf);
+
+        // Change sign: ADF prints densities with opposite sign
+        pot_i += -rho_solute[j] * invdist * screen_pot;
+      }
+      solv_pot[i][0] = pot_i;
+    }
+  }
+  else if (target.what == "potential+field")
+  {
+
+    std::vector<std::array<double, 1>> solv_pot(n_solvent, {0.0});
+    std::vector<std::array<double, 3>> solv_fld(n_solvent, {0.0, 0.0, 0.0});
+
+    // Compute both potential and field at the solvent coordinates
+     // #pragma omp parallel for schedule(static) default(none)                                       \
+    shared(n_solute, n_solvent, xyz_solute, xyz_solvent, rho_solute, inv_QMscrnFact, sqrt_pi) \
+    reduction(+ : solv_pot, solv_fld)
+    for (int i = 0; i < n_solvent; ++i)
+    {
+      double pot_i = 0.0;
+      std::array<double, 3> fld_i = {0.0, 0.0, 0.0};
+      for (int j = 0; j < n_solute; ++j)
+      {
+        // Check how to perform this substraction !!!!! first solvent or first solute ???????????????
+        const double dx = xyz_solvent[i][0] - xyz_solute[j][0];
+        const double dy = xyz_solvent[i][1] - xyz_solute[j][1];
+        const double dz = xyz_solvent[i][2] - xyz_solute[j][2];
+
+        const double dist2 = dx * dx + dy * dy + dz * dz;
+        const double dist = std::sqrt(dist2);
+
+        if (dist <= 1.0e-14)
+          continue;
+
+        const double invdist = 1.0 / dist;
+        const double sf = dist * inv_QMscrnFact;
+        const double screen_pot = std::erf(sf);
+        const double sf1 = (2.0 * sf / sqrt_pi) * std::exp(-sf * sf);
+        const double screen_fld = screen_pot - sf1;
+
+        // Change sign: ADF prints densities with opposite sign
+        pot_i += -rho_solute[j] * invdist * screen_pot;
+        fld_i[0] += -rho_solute[j] * dx * (invdist * invdist * invdist) * screen_fld;
+        fld_i[1] += -rho_solute[j] * dy * (invdist * invdist * invdist) * screen_fld;
+        fld_i[2] += -rho_solute[j] * dz * (invdist * invdist * invdist) * screen_fld;
+      }
+      solv_pot[i][0] = pot_i;
+      solv_fld[i][0] = fld_i[0];
+      solv_fld[i][1] = fld_i[1];
+      solv_fld[i][2] = fld_i[2];
+    }
+  }
+  else
+  {
+    throw std::runtime_error("Invalid 'what' option for solute-solvent calculation.");
+  }
+}
 //----------------------------------------------------------------------

@@ -24,16 +24,11 @@ public:
 
   // ---- API ----
 
-  //  /// @brief Computes solute-solvent potential.
-  //  /// @param target        Target object containing calculation options.
-  //  /// @param cube_acceptor Density of the acceptor (cube grid).
-  // /// @param np            Nanoparticle object (atoms, charges, dipoles).
-  // /// @details
-  // /// Populates @ref overlap_acceptor_nanoparticle with the computed
-  // /// real and imaginary parts of the integral.
-  // void acceptor_np(const Target &target, const Density &cube_acceptor, const Nanoparticle &np);
-
-  void solute_solvent_pot_field(const Target &target, const Density &solute, const Solvent &solv);
+  /// @brief Computes the potential and field at the solvent coordinates from a solute density.
+  /// @param target Target system containing solute and solvent file names and calculation type.
+  /// @param solute Density object representing the solute electron density.
+  /// @param solv   Solvent object containing solvent geometry and atomic labels.
+  void solute_solvent_pot_fld(const Target &target, const Density &solute, const Solvent &solv);
 };
 
 #endif // INTEGRALS_HPP

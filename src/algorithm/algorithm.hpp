@@ -31,10 +31,9 @@ public:
     /// @brief Compute electronic energy transfer rate between donor and acceptor.
     ///
 
-    /// @brief Computes the potential at the solvent coordinates from a solute density.
-    /// @param target Target system containing solute and solvent file names
-    ///        and calculation type.
-    void solute_dens_solvent_pot(Target &target);
+    /// @brief Computes the potential/field at the solvent coordinates from a solute density.
+    /// @param target Target system containing solute and solvent file names and calculation type.
+    void solute_dens_solvent_pot_fld(Target &target);
 
 private:
     Output &out;         ///< Reference to output handler.

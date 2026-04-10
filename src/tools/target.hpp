@@ -19,7 +19,7 @@ struct Target
     std::string density_file_integration_input; ///< Filename as given in the input file
 
     // What to calculate
-    std::string what; ///< What to calculate ("pot", "pot_fld")
+    std::string what; ///< What to calculate ("potential", "potential+field")
 
     // Solvent -  geometry
     bool is_solvent_present = false; ///< Whether a solvent file is provided.

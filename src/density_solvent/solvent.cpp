@@ -136,6 +136,11 @@ void Solvent::read_solvent_geometry_xyz(const std::string &filepath)
           "File \"" + filepath + "\" is corrupted: invalid XYZ coordinate line \"" + line + "\".");
     }
 
+    // Convert coordinates from Angstroms to Bohr
+    coords[0] *= Parameters::ToBohr;
+    coords[1] *= Parameters::ToBohr;
+    coords[2] *= Parameters::ToBohr;
+
     atomic_label.push_back(label);
     xyz.push_back(coords);
   }

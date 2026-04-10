@@ -305,7 +305,7 @@ void Input::get_target(Target &target)
         }
         else if (target.what == "potential" || target.what == "potential+field")
         {
-            target.mode = TargetMode::Solute_Solvent_Pot_Field;
+            target.mode = TargetMode::Solute_Solvent_Pot_Fld;
         }
     }
 
@@ -370,7 +370,7 @@ void Input::print_input_info(const Output &out, const Target &target)
         out.stream() << " " << out.sticks << "\n \n";
         break;
 
-    case TargetMode::Solute_Solvent_Pot_Field:
+    case TargetMode::Solute_Solvent_Pot_Fld:
         if (target.what == "potential")
         {
             out.stream() << indent << "Calculation --> Potential\n\n";

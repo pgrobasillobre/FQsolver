@@ -67,8 +67,8 @@ int main(int argc, char *argv[])
             algorithm.integrate_density(target);
             break;
 
-        case TargetMode::Solute_Solvent_Pot_Field:
-            algorithm.solute_dens_solvent_pot(target);
+        case TargetMode::Solute_Solvent_Pot_Fld:
+            algorithm.solute_dens_solvent_pot_fld(target);
             break;
 
         default:
