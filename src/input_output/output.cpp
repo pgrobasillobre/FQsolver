@@ -137,27 +137,23 @@ void Output::print_density(const Target &target, const Density &cube, std::optio
     log_stream << " \n " << sticks << "\n\n";
 }
 //----------------------------------------------------------------------
-/// Logs nanoparticle model, geometry, and atomic coordinates.
-// void Output::print_nanoparticle(const Nanoparticle &np)
-// {
-//     log_stream << std::string(23, ' ') << "Nanoparticle Model   : " << np.nanoparticle_model << "\n\n";
-//     log_stream << sticks << "\n\n";
-//     log_stream << std::string(28, ' ') << "Nanoparticle Geometry (Å)                    \n \n";
-//     log_stream << " " << sticks << "\n ";
-//     log_stream << std::string(12, ' ') << "Atom" << std::string(15, ' ') << "X" << std::string(19, ' ') << "Y" << std::string(19, ' ') << "Z" << "\n";
-//     log_stream << " " << sticks << "\n \n";
-//
-//     // Print nanoparticle properties
-//     for (int i = 0; i < np.natoms; ++i)
-//     {
-//         print_formatted_line3(log_stream, std::string("Xx"),
-//                               np.xyz[i][0] * Parameters::ToAng,
-//                               np.xyz[i][1] * Parameters::ToAng,
-//                               np.xyz[i][2] * Parameters::ToAng);
-//     }
-//
-//     log_stream << " \n " << sticks << "\n\n";
-// }
+/// Prints solvent geometry information: number of solvent atoms and their coordinates.
+void Output::print_solvent(const Target &target, const Solvent &solv)
+{
+    log_stream << std::string(29, ' ') << "Solvent Information                    \n \n";
+    log_stream << " " << sticks << "\n \n";
+    log_stream << std::string(3, ' ') << "Solvent Geometry File: " << std::filesystem::path(target.solvent_file).filename().string() << "\n \n";
+    log_stream << std::string(3, ' ') << "Number of solvent atoms: " << solv.natoms << "\n \n";
+    log_stream << std::string(3, ' ') << "Solvent Atomic Coordinates (Å): \n \n";
+    for (int i = 0; i < solv.natoms; ++i)
+    {
+        print_formatted_line2(log_stream, std::string(solv.atomic_label[i]),
+                              solv.xyz[i][0],
+                              solv.xyz[i][1],
+                              solv.xyz[i][2]);
+    }
+    log_stream << " \n " << sticks << "\n\n";
+}
 //----------------------------------------------------------------------
 // Prints a single formatted line for grid or voxel information (used in density headers).
 void Output::print_formatted_line1(std::ostream &out, int i, double a, double b, double c)
@@ -278,7 +274,7 @@ void Output::print_cube_coordinates(const std::string what_dens,
 //----------------------------------------------------------------------
 // Writes nanoparticle atom positions to .xyz file and dipole data to .nmd files.
 // Includes real and imaginary components if available.
-//void Output::print_np_coords_dipoles(const std::string infile, const Nanoparticle &np) const
+// void Output::print_np_coords_dipoles(const std::string infile, const Nanoparticle &np) const
 //{
 //    double ToAng = Parameters::ToAng;
 //

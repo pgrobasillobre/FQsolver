@@ -7,7 +7,6 @@
 #include <vector>
 #include <array>
 
-
 class Output; // Forward declaration
 
 //----------------------------------------------------------------------
@@ -15,36 +14,50 @@ class Output; // Forward declaration
 /// @brief Represents a solvent with atomic positions, potential/field at atomic sites and charges.
 ///
 /// @details
-/// This class stores data (atomic positions, potential/field at atomic sites, and charges) 
+/// This class stores data (atomic positions, potential/field at atomic sites, and charges)
 /// for a solvent system and provides methods for reading that data.
 
 class Solvent
 {
 public:
+  int natoms = 0; ///< Number of atoms in the solvent.
 
-  int natoms = 0;  ///< Number of atoms in the nanoparticle.
+  bool potential = false;           ///< True if only potential calculation is requested.
+  bool field = false;               ///< True if only field calculation is requested.
+  bool potential_and_field = false; ///< True if potential and field calculation is requested.
 
-  bool charges = false;              ///< True if nanoparticle contains only charges.
-  bool charges_and_dipoles = false;  ///< True if nanoparticle includes dipoles.
+  std::vector<std::array<double, 1>> solv_pot; // Scalar potential at each atomic site
+  std::vector<std::array<double, 3>> solv_fld; // Electric field vector at each atomic site
 
-  std::string nanoparticle_model;    ///< Input model name (used to determine input structure).
+  std::vector<std::array<double, 3>> xyz; // XYZ coordinates
+  std::vector<std::string> atomic_label;  //< Atomic labels (e.g., "C", "O").
 
-  std::array<double, 3> geom_center; ///< Geometric center of the nanoparticle.
+  std::string solvent_file_extension; ///< Extension of the solvent geometry file (e.g., ".xyz").
 
-  std::vector<std::array<double, 2>> q;    // Charges with real + imaginary part
-  std::vector<std::array<double, 6>> mu;   // Dipoles with 3 components each for real + imaginary part
-
-  std::vector<std::array<double, 3>> xyz;  // XYZ coordinates
-
-  /// @brief Loads nanoparticle coordinates and multipole data from input.
-  /// @param target Target object providing file paths and rotation options.
+  /// @brief Loads solvent coordinates from the specified file.
+  /// @param target Target object providing file paths.
   /// @param out    Output object used for logging/debugging.
   /// @details
-  /// Automatically detects the model type and loads charge and/or dipole data accordingly.
-  /// Applies rotation if specified in the target configuration.
-  void read_nanoparticle(const Target &target, const Output &out);
+  /// This method reads the solvent geometry from the file specified in the Target object.
+  void read_solvent(const Target &target, const Output &out);
 
+private:
+  /// @brief Checks if the specified file exists.
+  /// @param filepath Path to the file to check.
+  void check_file_exists(const std::string &filepath) const;
+  
+  /// @brief Verifies that the solvent file has the expected extension.
+  /// @param filepath Path to the solvent geometry file.
+  void check_solvent_file_extension(const std::string &str);
+
+  /// @brief Selects the appropriate method to read solvent geometry based on file extension.
+  /// @param filepath Path to the solvent geometry file.
+  void read_solvent_geometry(const std::string &filepath);
+
+  /// @brief Reads solvent geometry from an XYZ file.
+  /// @param filepath Path to the XYZ file containing solvent geometry.
+  void read_solvent_geometry_xyz(const std::string &filepath);
 };
 
-#endif // NANOPARTICCLE_HPP
+#endif // SOLVENT_HPP
 //----------------------------------------------------------------------

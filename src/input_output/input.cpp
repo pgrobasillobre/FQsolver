@@ -303,7 +303,7 @@ void Input::get_target(Target &target)
         {
             throw std::runtime_error("You must specify what to calculate with the 'what' keyword in the input file.");
         }
-        else if (target.what == "pot" || target.what == "pot_field")
+        else if (target.what == "potential" || target.what == "potential+field")
         {
             target.mode = TargetMode::Solute_Solvent_Pot_Field;
         }
@@ -371,12 +371,19 @@ void Input::print_input_info(const Output &out, const Target &target)
         break;
 
     case TargetMode::Solute_Solvent_Pot_Field:
-        out.stream() << indent << "Calculation --> Solute Density + Solvent Potential/Field\n\n";
-        out.stream() << indent << "Solute Density File: " << target.solute_density_input_file << "\n";
+        if (target.what == "potential")
+        {
+            out.stream() << indent << "Calculation --> Potential\n\n";
+        }
+        else if (target.what == "potential+field")
+        {
+            out.stream() << indent << "Calculation --> Potential + Field\n\n";
+        }
+        out.stream() << indent << "Solute Density File  : " << target.solute_density_input_file << "\n";
         out.stream() << indent << "Solvent Geometry File: " << target.solvent_input_file << "\n\n";
         if (target.is_cutoff_present)
         {
-            out.stream() << indent << "Cutoff               : Yes (" << target.cutoff << " Hartree)\n\n";
+            out.stream() << indent << "Cutoff               : " << target.cutoff << " Hartree\n\n";
         }
         else
         {

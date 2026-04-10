@@ -42,7 +42,7 @@ private:
     Density cube;        ///< General-purpose density object.
     Density cube_solute; ///< Density associated with the solute
     Integrals integrals; ///< Integral evaluator for couplings.
-    // Solvent solv;     ///< Solvent representation.
+    Solvent solv;        ///< Solvent representation.
 };
 
 #endif

@@ -13,13 +13,12 @@
 #include <string>
 #include <ostream>
 
-
 class Input; // Forward declaration of Input to avoid circular dependency
 
 //----------------------------------------------------------------------
 /// @class Output
 /// @brief Manages output filenames, streams, and formatted printing.
-/// 
+///
 /// Handles writing of results, densities, and diagnostics. Also provides
 /// access to the main output stream.
 class Output
@@ -46,13 +45,14 @@ public:
     /// @param target The current target object containing input parameters.
     /// @param cube The Density object containing data to print.
     /// @param header Optional custom header for the density section.
-    void print_density(const Target &target, 
-                       const Density &cube, 
+    void print_density(const Target &target,
+                       const Density &cube,
                        std::optional<std::string> header = std::nullopt);
-        
-    /// @brief Prints nanoparticle information.
-    /// @param np Nanoparticle object to print.
-    //void print_nanoparticle(const Nanoparticle &np);
+
+    /// @brief Prints solvent data to the output stream.
+    /// @param target The current target object containing input parameters.
+    /// @param solv The Solvent object containing data to print.
+    void print_solvent(const Target &target, const Solvent &solv);
 
     /// @brief Prints results of computed integrals.
     /// @param target Target configuration.
@@ -65,13 +65,13 @@ public:
     /// @param xyz Vector of XYZ coordinates.
     void print_cube_coordinates(const std::string what_dens,
                                 const int n_points,
-                                const std::vector<std::array<double, 3>>& xyz) const;
+                                const std::vector<std::array<double, 3>> &xyz) const;
 
     /// @brief Prints nanoparticle coordinates and dipoles, if present.
     /// @param infile Source file name.
     /// @param np Nanoparticle object.
-    //void print_np_coords_dipoles(const std::string infile, const Nanoparticle& np) const;
-    
+    // void print_np_coords_dipoles(const std::string infile, const Nanoparticle& np) const;
+
     /// @brief Horizontal separator (80 dashes) used in reports.
     const std::string sticks = std::string(80, '-');
 
@@ -111,7 +111,7 @@ private:
     std::string format1 = "   {:5d} {:15.7E} {:15.7E} {:15.7E}\n";
 
     /// @brief File stream used for output (mutable to allow usage in const methods).
-    mutable std::ofstream log_stream; 
+    mutable std::ofstream log_stream;
 };
 
 #endif // OUTPUT_HPP

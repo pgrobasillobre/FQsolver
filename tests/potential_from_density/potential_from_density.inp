@@ -1,3 +1,4 @@
-density: test_density.cube
-solvent: water.xyz
-cutoff: 1e-6
+what: potential
+density: test.cube
+solvent: h2.xyz
+cutoff: 1e-29

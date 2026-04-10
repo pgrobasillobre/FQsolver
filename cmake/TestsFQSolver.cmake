@@ -9,4 +9,4 @@ endmacro()
 
 # Tests launched with "FQSolver"
 add_FQSolver_runtest(integrate_density                                "Integrate Cube File")
-#add_FQSolver_runtest(solute_to_solvent_potential                      "FQSolver;Solute - Solvent Potential;")
+#add_FQSolver_runtest(solute_to_solvent_potential                      "Solute - Solvent Potential;")

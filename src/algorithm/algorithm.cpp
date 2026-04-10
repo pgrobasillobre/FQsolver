@@ -36,20 +36,20 @@ void Algorithm::solute_dens_solvent_pot(Target &target)
     //
     cube_solute.read_density(target, out, "Solute");
 
-//    np.read_solvent(target, out);
+    solv.read_solvent(target, out);
     //
     //  Print acceptor / donor density characteristics
     //
-//    out.print_solvent(np);
+    out.print_solvent(target, solv);
 
-//    out.print_density(target, cube_acceptor, Parameters::acceptor_header);
+    out.print_density(target, cube_solute, Parameters::solute_header);
     //
     //  Compute integrals
     //
-//    integrals.acceptor_np(target, cube_acceptor, np);
+    //    integrals.acceptor_np(target, cube_acceptor, np);
     //
     //  Print results
     //
-//    out.print_results_integrals(target, integrals);
+    //    out.print_results_integrals(target, integrals);
 }
 //----------------------------------------------------------------------
