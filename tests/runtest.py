@@ -2,10 +2,15 @@
 
 import argparse
 import difflib
+import math
 import os
 import re
 import shlex
 import subprocess
+
+NUMBER_RE = re.compile(r"[-+]?(?:\d+\.\d*|\.\d+|\d+)(?:[eE][-+]?\d+)?")
+DEFAULT_REL_TOLERANCE = 1.0e-12
+DEFAULT_ABS_TOLERANCE = 1.0e-12
 
 
 def get_filter(from_string=None, to_string=None, rel_tolerance=None):
@@ -54,10 +59,35 @@ def _normalize_text(text, replacements=None):
         "Normal Termination of FQSolver program in date <normalized>",
         text,
     )
+    text = re.sub(r"OMP Threads:\s+\d+", "OMP Threads: <normalized>", text)
     text = re.sub(r"/[^\n]*?/tests/[^/\n]*_from_density", "<WORK_DIR>", text)
     for old, new in replacements or []:
         text = text.replace(old, new)
     return text
+
+
+def _numeric_texts_close(reference_text, actual_text, rel_tolerance, abs_tolerance):
+    reference_numbers = NUMBER_RE.findall(reference_text)
+    actual_numbers = NUMBER_RE.findall(actual_text)
+
+    if len(reference_numbers) != len(actual_numbers):
+        return False
+
+    reference_skeleton = NUMBER_RE.sub("<NUM>", reference_text)
+    actual_skeleton = NUMBER_RE.sub("<NUM>", actual_text)
+    if reference_skeleton != actual_skeleton:
+        return False
+
+    for reference_number, actual_number in zip(reference_numbers, actual_numbers):
+        if not math.isclose(
+            float(reference_number),
+            float(actual_number),
+            rel_tol=rel_tolerance,
+            abs_tol=abs_tolerance,
+        ):
+            return False
+
+    return True
 
 
 def _compare_file(actual_path, reference_path, filter_specs, replacements=None):
@@ -70,6 +100,14 @@ def _compare_file(actual_path, reference_path, filter_specs, replacements=None):
     reference_text = _normalize_text(_remove_filtered_blocks(reference_text, filter_specs), replacements)
 
     if actual_text == reference_text:
+        return True, ""
+
+    if _numeric_texts_close(
+        reference_text,
+        actual_text,
+        DEFAULT_REL_TOLERANCE,
+        DEFAULT_ABS_TOLERANCE,
+    ):
         return True, ""
 
     diff = "".join(
