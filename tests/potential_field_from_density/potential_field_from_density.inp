@@ -1,0 +1,4 @@
+what: potential+field
+solvent: solvent/water_solvent.xyz
+density: density/zn-pc_scf_dens.cube 
+cutoff: 1e-03

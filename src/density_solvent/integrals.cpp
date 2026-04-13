@@ -153,10 +153,10 @@ void Integrals::solute_solvent_pot_fld(const Target &target, const Density &solu
       solv_fld[i][2] = fld_i[2];
     }
     // debugpgi: Print results for debugging
-    for (int i = 0; i < n_solvent; ++i)
-    {
-      std::cout << "For atom #" << i << ": Potential = " << solv_pot[i][0] << ", Field = (" << solv_fld[i][0] << ", " << solv_fld[i][1] << ", " << solv_fld[i][2] << std::endl;
-    }
+    //for (int i = 0; i < n_solvent; ++i)
+    //{
+    //  std::cout << "For atom #" << i << ": Potential = " << solv_pot[i][0] << ", Field = (" << solv_fld[i][0] << ", " << solv_fld[i][1] << ", " << solv_fld[i][2] << std::endl;
+    //}
   }
   else
   {

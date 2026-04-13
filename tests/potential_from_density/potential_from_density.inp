@@ -1,6 +1,4 @@
-what: potential+field
-#what: potential
-#what: field
-density: test.cube
-solvent: h2.xyz
-cutoff: 1e-29
+what: potential
+solvent: solvent/water_solvent.xyz
+density: density/zn-pc_scf_dens.cube 
+cutoff: 1e-03

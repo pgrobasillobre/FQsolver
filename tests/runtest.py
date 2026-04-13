@@ -47,24 +47,27 @@ def _remove_filtered_blocks(text, filter_specs):
     return "\n".join(filtered) + ("\n" if text.endswith("\n") else "")
 
 
-def _normalize_text(text):
+def _normalize_text(text, replacements=None):
     text = text.replace("\r\n", "\n")
     text = re.sub(
         r"Normal Termination of FQSolver program in date .*",
         "Normal Termination of FQSolver program in date <normalized>",
         text,
     )
+    text = re.sub(r"/[^\n]*?/tests/[^/\n]*_from_density", "<WORK_DIR>", text)
+    for old, new in replacements or []:
+        text = text.replace(old, new)
     return text
 
 
-def _compare_file(actual_path, reference_path, filter_specs):
+def _compare_file(actual_path, reference_path, filter_specs, replacements=None):
     with open(actual_path, encoding="utf-8") as handle:
         actual_text = handle.read()
     with open(reference_path, encoding="utf-8") as handle:
         reference_text = handle.read()
 
-    actual_text = _normalize_text(_remove_filtered_blocks(actual_text, filter_specs))
-    reference_text = _normalize_text(_remove_filtered_blocks(reference_text, filter_specs))
+    actual_text = _normalize_text(_remove_filtered_blocks(actual_text, filter_specs), replacements)
+    reference_text = _normalize_text(_remove_filtered_blocks(reference_text, filter_specs), replacements)
 
     if actual_text == reference_text:
         return True, ""
@@ -80,9 +83,10 @@ def _compare_file(actual_path, reference_path, filter_specs):
     return False, diff
 
 
-def run(options, configure, input_files=None, filters=None):
+def run(options, configure, input_files=None, filters=None, output_files=None):
     input_files = input_files or []
     filters = filters or {}
+    output_files = output_files or []
 
     launcher, full_command, output_prefix, relative_reference_path = configure(
         options, input_files, None
@@ -109,6 +113,24 @@ def run(options, configure, input_files=None, filters=None):
         ok, diff = _compare_file(actual_path, reference_path, filter_specs)
         if not ok:
             print(f"Output mismatch for {extension} file.")
+            print(diff)
+            return 1
+
+    replacements = [(os.path.abspath(options.work_dir), "<WORK_DIR>")]
+    for actual_relpath, reference_relpath in output_files:
+        actual_path = os.path.join(options.work_dir, actual_relpath)
+        reference_path = os.path.join(options.work_dir, reference_relpath)
+
+        if not os.path.exists(actual_path):
+            print(f"Missing actual output file: {actual_path}")
+            return 1
+        if not os.path.exists(reference_path):
+            print(f"Missing reference output file: {reference_path}")
+            return 1
+
+        ok, diff = _compare_file(actual_path, reference_path, [], replacements)
+        if not ok:
+            print(f"Output mismatch for {actual_relpath} file.")
             print(diff)
             return 1
 
