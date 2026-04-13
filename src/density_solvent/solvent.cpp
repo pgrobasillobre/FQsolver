@@ -64,7 +64,6 @@ void Solvent::read_solvent_geometry(const std::string &filepath)
   {
     read_solvent_geometry_xyz(filepath);
   }
-
 }
 //----------------------------------------------------------------------
 // Read solvent geometry from an XYZ file
@@ -97,7 +96,7 @@ void Solvent::read_solvent_geometry_xyz(const std::string &filepath)
   }
 
   // Second line: title/comment.
-  // Check it's present, otherwise raise an error. 
+  // Check it's present, otherwise raise an error.
   // We will not use it, but we want to ensure the file is not corrupted (e.g., missing lines).
   if (!std::getline(infile, line))
   {
@@ -115,7 +114,7 @@ void Solvent::read_solvent_geometry_xyz(const std::string &filepath)
   // Read atomic coordinates
   for (int i = 0; i < natoms; ++i)
   {
-    // Raise error if line is missing. 
+    // Raise error if line is missing.
     // Check the line contains an atomic label followed by three floating-point numbers, and nothing else.
     if (!std::getline(infile, line))
     {
@@ -125,8 +124,8 @@ void Solvent::read_solvent_geometry_xyz(const std::string &filepath)
     }
 
     std::istringstream iss(line); // Create a string stream to parse the line.
-    std::string label; // Variable to hold the atomic label.
-    std::string trailing; // Variable to check for any extra content after the expected fields.
+    std::string label;            // Variable to hold the atomic label.
+    std::string trailing;         // Variable to check for any extra content after the expected fields.
 
     std::array<double, 3> coords = {0.0, 0.0, 0.0};
 
@@ -165,72 +164,5 @@ void Solvent::read_solvent(const Target &target, const Output &out)
 
   // Check file with given extension is not corrupted (e.g., missing lines, wrong format).
   read_solvent_geometry(filepath);
-
-  //
-  //  // Check if FRET end marker is present
-  //  bool is_fret_end_marker_present = false;
-  //  is_fret_end_marker_present = go_to_string(infile, Parameters::fret_end);
-  //
-  //  // Rewind and come back to fret_start
-  //  infile.clear();
-  //  infile.seekg(0, std::ios::beg);
-  //  is_fret_quantities_present = go_to_string(infile, Parameters::fret_start);
-  //
-  //  // Check charges / charges + dipoles
-  //  std::string line;
-  //  std::getline(infile, line);
-  //  if (line == Parameters::charges_header)
-  //  {
-  //    charges = true;
-  //    nanoparticle_model = "charges";
-  //  }
-  //  else if (line == Parameters::charges_and_dipoles_header)
-  //  {
-  //    charges_and_dipoles = true;
-  //    nanoparticle_model = "charges + dipoles";
-  //  }
-  //  else
-  //  {
-  //    throw std::runtime_error("Expected header line with charges or charges and dipoles, got: " + line);
-  //  }
-  //
-  //  // Read charges / charges and dipoles.
-  //  while (std::getline(infile, line))
-  //  {
-  //    if (line == Parameters::fret_end)
-  //      break;
-  //
-  //    std::istringstream iss(line);
-  //    std::array<double, 3> coords{};
-  //
-  //    if (charges)
-  //    {
-  //      std::array<double, 2> charge{};
-  //      iss >> charge[0] >> charge[1] >> coords[0] >> coords[1] >> coords[2];
-  //      q.push_back(charge);
-  //    }
-  //    else if (charges_and_dipoles)
-  //    {
-  //      std::array<double, 2> charge{};
-  //      std::array<double, 6> dipole{};
-  //      iss >> charge[0] >> charge[1] >> dipole[0] >> dipole[1] >> dipole[2] >> dipole[3] >> dipole[4] >> dipole[5] >> coords[0] >> coords[1] >> coords[2];
-  //      q.push_back(charge);
-  //      mu.push_back(dipole);
-  //    }
-  //
-  //    xyz.push_back(coords);
-  //  }
-  //  natoms = xyz.size();
-  //
-  //  // Compute geometrical center
-  //  for (const auto &coord : xyz)
-  //  {
-  //    geom_center[0] += coord[0];
-  //    geom_center[1] += coord[1];
-  //    geom_center[2] += coord[2];
-  //  }
-  //  geom_center[0] /= natoms;
-  //  geom_center[1] /= natoms;
-  //  geom_center[2] /= natoms;
 }
 //----------------------------------------------------------------------

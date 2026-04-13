@@ -27,8 +27,9 @@ namespace Parameters
     constexpr int ncellmax = 10000000;
 
     // Accepted entries for the "what" keyword
-    inline constexpr std::array<std::string_view, 2> accepted_what_entries = {
+    inline constexpr std::array<std::string_view, 3> accepted_what_entries = {
         "potential",
+        "field",        
         "potential+field"};
 
     // Accepted solvent file extensions

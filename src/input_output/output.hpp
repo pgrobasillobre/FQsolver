@@ -59,6 +59,12 @@ public:
     /// @param integrals Integrals object containing computed values.
     void print_results_integrals(const Target &target, const Integrals &integrals);
 
+    /// @brief Prints results of computed potentials and fields.
+    /// @param target Target configuration.
+    /// @param solv Solvent object containing solvent data.
+    /// @param integrals Integrals object containing computed values.
+    void print_results_pot_fld(const Target &target, const Solvent &solv, const Integrals &integrals);
+
     /// @brief Outputs the coordinates of the cube density.
     /// @param what_dens Label (e.g., "donor", "acceptor").
     /// @param n_points Number of grid points.

@@ -303,7 +303,7 @@ void Input::get_target(Target &target)
         {
             throw std::runtime_error("You must specify what to calculate with the 'what' keyword in the input file.");
         }
-        else if (target.what == "potential" || target.what == "potential+field")
+        else if (target.what == "potential" || target.what == "field" || target.what == "potential+field")
         {
             target.mode = TargetMode::Solute_Solvent_Pot_Fld;
         }
@@ -374,6 +374,10 @@ void Input::print_input_info(const Output &out, const Target &target)
         if (target.what == "potential")
         {
             out.stream() << indent << "Calculation --> Potential\n\n";
+        }
+        else if (target.what =="field")
+        {
+            out.stream() << indent << "Calculation --> Field\n\n";
         }
         else if (target.what == "potential+field")
         {

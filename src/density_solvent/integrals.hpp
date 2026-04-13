@@ -21,6 +21,8 @@ class Integrals
 public:
   // ---- Computed values ----
   double coulomb_acceptor_donor = 0.0;
+  std::vector<std::array<double, 1>> solv_pot;
+  std::vector<std::array<double, 3>> solv_fld;
 
   // ---- API ----
 

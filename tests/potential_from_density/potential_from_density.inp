@@ -1,4 +1,6 @@
 what: potential+field
+#what: potential
+#what: field
 density: test.cube
 solvent: h2.xyz
 cutoff: 1e-29

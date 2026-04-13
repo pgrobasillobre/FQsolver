@@ -39,6 +39,9 @@ void Integrals::solute_solvent_pot_fld(const Target &target, const Density &solu
 
   if (target.what == "potential")
   {
+    solv_pot.assign(n_solvent, {0.0});
+    solv_fld.clear();
+
     // Compute only the potential at the solvent coordinates
      // #pragma omp parallel for schedule(static) default(none)                                       \
     shared(n_solute, n_solvent, xyz_solute, xyz_solvent, rho_solute, inv_QMscrnFact, sqrt_pi) \
@@ -46,8 +49,6 @@ void Integrals::solute_solvent_pot_fld(const Target &target, const Density &solu
 
     for (int i = 0; i < n_solvent; ++i)
     {
-      std::vector<std::array<double, 1>> solv_pot(n_solvent, {0.0});
-
       double pot_i = 0.0;
       for (int j = 0; j < n_solute; ++j)
       {
@@ -63,9 +64,6 @@ void Integrals::solute_solvent_pot_fld(const Target &target, const Density &solu
 
         const double invdist = 1.0 / dist;
 
-        // Print invdist for debugging
-        std::cout << "For atom #" << i << ": Inverse distance: " << invdist << std::endl;
-
         const double sf = dist * inv_QMscrnFact;
         const double screen_pot = std::erf(sf);
 
@@ -75,11 +73,46 @@ void Integrals::solute_solvent_pot_fld(const Target &target, const Density &solu
       solv_pot[i][0] = pot_i;
     }
   }
+  else if (target.what == "field")
+  {
+    solv_fld.assign(n_solvent, {0.0, 0.0, 0.0});
+    solv_pot.clear();
+    // Compute only the field at the solvent coordinates
+     // #pragma omp parallel for schedule(static) default(none)                                       \
+    shared(n_solute, n_solvent, xyz_solute, xyz_solvent, rho_solute, inv_QMscrnFact, sqrt_pi) \
+    reduction(+ : solv_fld)
+    for (int i = 0; i < n_solvent; ++i)
+    {
+      std::array<double, 3> fld_i = {0.0, 0.0, 0.0};
+      for (int j = 0; j < n_solute; ++j)
+      {
+        const double dx = xyz_solvent[i][0] - xyz_solute[j][0];
+        const double dy = xyz_solvent[i][1] - xyz_solute[j][1];
+        const double dz = xyz_solvent[i][2] - xyz_solute[j][2];
+        const double dist2 = dx * dx + dy * dy + dz * dz;
+        const double dist = std::sqrt(dist2);
+        if (dist <= 1.0e-14)
+          continue;
+        const double invdist = 1.0 / dist;
+        const double sf = dist * inv_QMscrnFact;
+        const double screen_pot = std::erf(sf);
+        const double sf1 = (2.0 * sf / sqrt_pi) * std::exp(-sf * sf);
+        const double screen_fld = screen_pot - sf1;
+        // Change sign: ADF prints densities with opposite sign
+        fld_i[0] += -rho_solute[j] * dx * (invdist * invdist * invdist) * screen_fld;
+        fld_i[1] += -rho_solute[j] * dy * (invdist * invdist * invdist) * screen_fld;
+        fld_i[2] += -rho_solute[j] * dz * (invdist * invdist * invdist) * screen_fld;
+      }
+      solv_fld[i][0] = fld_i[0];
+      solv_fld[i][1] = fld_i[1];
+      solv_fld[i][2] = fld_i[2];
+    }
+  }
   else if (target.what == "potential+field")
   {
 
-    std::vector<std::array<double, 1>> solv_pot(n_solvent, {0.0});
-    std::vector<std::array<double, 3>> solv_fld(n_solvent, {0.0, 0.0, 0.0});
+    solv_pot.assign(n_solvent, {0.0});
+    solv_fld.assign(n_solvent, {0.0, 0.0, 0.0});
 
     // Compute both potential and field at the solvent coordinates
      // #pragma omp parallel for schedule(static) default(none)                                       \
@@ -118,6 +151,11 @@ void Integrals::solute_solvent_pot_fld(const Target &target, const Density &solu
       solv_fld[i][0] = fld_i[0];
       solv_fld[i][1] = fld_i[1];
       solv_fld[i][2] = fld_i[2];
+    }
+    // debugpgi: Print results for debugging
+    for (int i = 0; i < n_solvent; ++i)
+    {
+      std::cout << "For atom #" << i << ": Potential = " << solv_pot[i][0] << ", Field = (" << solv_fld[i][0] << ", " << solv_fld[i][1] << ", " << solv_fld[i][2] << std::endl;
     }
   }
   else
