@@ -43,10 +43,8 @@ void Integrals::solute_solvent_pot_fld(const Target &target, const Density &solu
     solv_fld.clear();
 
     // Compute only the potential at the solvent coordinates
-     // #pragma omp parallel for schedule(static) default(none)                                       \
-    shared(n_solute, n_solvent, xyz_solute, xyz_solvent, rho_solute, inv_QMscrnFact, sqrt_pi) \
-    reduction(+ : solv_pot)
-
+#pragma omp parallel for schedule(static) default(none)                                       \
+    shared(n_solute, n_solvent, xyz_solute, xyz_solvent, rho_solute, inv_QMscrnFact, solv_pot)
     for (int i = 0; i < n_solvent; ++i)
     {
       double pot_i = 0.0;
@@ -77,10 +75,10 @@ void Integrals::solute_solvent_pot_fld(const Target &target, const Density &solu
   {
     solv_fld.assign(n_solvent, {0.0, 0.0, 0.0});
     solv_pot.clear();
+
     // Compute only the field at the solvent coordinates
-     // #pragma omp parallel for schedule(static) default(none)                                       \
-    shared(n_solute, n_solvent, xyz_solute, xyz_solvent, rho_solute, inv_QMscrnFact, sqrt_pi) \
-    reduction(+ : solv_fld)
+#pragma omp parallel for schedule(static) default(none)                                                   \
+    shared(n_solute, n_solvent, xyz_solute, xyz_solvent, rho_solute, inv_QMscrnFact, sqrt_pi, solv_fld)
     for (int i = 0; i < n_solvent; ++i)
     {
       std::array<double, 3> fld_i = {0.0, 0.0, 0.0};
@@ -115,16 +113,14 @@ void Integrals::solute_solvent_pot_fld(const Target &target, const Density &solu
     solv_fld.assign(n_solvent, {0.0, 0.0, 0.0});
 
     // Compute both potential and field at the solvent coordinates
-     // #pragma omp parallel for schedule(static) default(none)                                       \
-    shared(n_solute, n_solvent, xyz_solute, xyz_solvent, rho_solute, inv_QMscrnFact, sqrt_pi) \
-    reduction(+ : solv_pot, solv_fld)
+  #pragma omp parallel for schedule(static) default(none)                                                              \
+      shared(n_solute, n_solvent, xyz_solute, xyz_solvent, rho_solute, inv_QMscrnFact, sqrt_pi, solv_pot, solv_fld)
     for (int i = 0; i < n_solvent; ++i)
     {
       double pot_i = 0.0;
       std::array<double, 3> fld_i = {0.0, 0.0, 0.0};
       for (int j = 0; j < n_solute; ++j)
       {
-        // Check how to perform this substraction !!!!! first solvent or first solute ???????????????
         const double dx = xyz_solvent[i][0] - xyz_solute[j][0];
         const double dy = xyz_solvent[i][1] - xyz_solute[j][1];
         const double dz = xyz_solvent[i][2] - xyz_solute[j][2];
@@ -153,7 +149,7 @@ void Integrals::solute_solvent_pot_fld(const Target &target, const Density &solu
       solv_fld[i][2] = fld_i[2];
     }
     // debugpgi: Print results for debugging
-    //for (int i = 0; i < n_solvent; ++i)
+    // for (int i = 0; i < n_solvent; ++i)
     //{
     //  std::cout << "For atom #" << i << ": Potential = " << solv_pot[i][0] << ", Field = (" << solv_fld[i][0] << ", " << solv_fld[i][1] << ", " << solv_fld[i][2] << std::endl;
     //}
