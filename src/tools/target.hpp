@@ -20,6 +20,10 @@ struct Target
 
     // What to calculate
     std::string what; ///< What to calculate ("potential", "field", "potential+field")
+    std::string pot_or_fld; ///< Specific calculation type for potential/field (set later based on "what")
+
+    // FQ parametrization
+    std::string parametrization; ///< Parametrization to use for FQ charge calculation (e.g., "giovannini")
 
     // Solvent -  geometry
     bool is_solvent_present = false; ///< Whether a solvent file is provided.
@@ -40,6 +44,8 @@ struct Target
     bool integrate_density = false; ///< Whether to integrate a single cube density
 
     bool is_what_present = false; ///< Whether the "what" keyword is present in the input file
+
+    bool is_parametrization_present = false; ///< Whether the "parametrization" keyword is present in the input file
 
     bool is_cutoff_present = false; ///< Flag to apply distance cutoff for grid reduction
 

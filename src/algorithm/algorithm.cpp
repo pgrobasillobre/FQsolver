@@ -27,7 +27,7 @@ void Algorithm::integrate_density(Target &target)
 // Solute-solvent coupling:
 // 1) read solute density + solvent geometry
 // 2) print characteristics
-// 3) compute integrals
+// 3) compute potential/field at solvent coordinates from solute density
 // 4) print results
 void Algorithm::solute_dens_solvent_pot_fld(Target &target)
 {
@@ -37,16 +37,19 @@ void Algorithm::solute_dens_solvent_pot_fld(Target &target)
     cube_solute.read_density(target, out, "Solute");
 
     solv.read_solvent(target, out);
+
     //
     //  Print acceptor / donor density characteristics
     //
     out.print_solvent(target, solv);
 
     out.print_density(target, cube_solute, Parameters::solute_header);
+
     //
     //  Compute potential/field at solvent coordinates
     //
     integrals.solute_solvent_pot_fld(target, cube_solute, solv);
+
     //
     //  Print results
     //
@@ -54,3 +57,35 @@ void Algorithm::solute_dens_solvent_pot_fld(Target &target)
     out.print_results_pot_fld(target, solv, integrals);
 }
 //----------------------------------------------------------------------
+// Compute FQ charges:
+// 1) read solute density + solvent geometry
+// 2) print characteristics
+// 3) compute potential at solvent coordinates from solute density
+// 4) compute FQ charges from potential and solvent parameters
+// 5) print results
+void Algorithm::compute_fq_charges(Target &target)
+{
+    //
+    //  Read input files
+    //
+    cube_solute.read_density(target, out, "Solute");
+
+    solv.read_solvent(target, out);
+
+    //
+    //  Print acceptor / donor density characteristics
+    //
+    out.print_solvent(target, solv);
+
+    out.print_density(target, cube_solute, Parameters::solute_header);
+
+    //
+    //  Compute potential/field at solvent coordinates
+    //
+    integrals.solute_solvent_pot_fld(target, cube_solute, solv);
+
+    //
+    //  Compute FQ charges from potential and solvent parameters
+    //
+    // integrals.compute_fq_charges(target, solv, integrals);
+}

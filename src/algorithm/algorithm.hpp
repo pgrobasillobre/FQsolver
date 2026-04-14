@@ -35,6 +35,10 @@ public:
     /// @param target Target system containing solute and solvent file names and calculation type.
     void solute_dens_solvent_pot_fld(Target &target);
 
+    /// @brief Computes FQ charges from the potential and solvent parameters.
+    /// @param target Target system containing necessary input for FQ charge calculation.
+    void compute_fq_charges(Target &target);
+
 private:
     Output &out;         ///< Reference to output handler.
     Target &target;      ///< Reference to target system.

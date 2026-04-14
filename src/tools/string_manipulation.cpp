@@ -61,16 +61,37 @@ void String_manipulation::string_what_accepted_entries(const std::string &str, s
     if (it == Parameters::accepted_what_entries.end())
     {
         std::ostringstream accepted;
-        for (std::size_t i = 0; i < Parameters::accepted_what_entries.size(); ++i)
+        for (const auto entry : Parameters::accepted_what_entries)
         {
-            if (i > 0)
-                accepted << ", ";
-            accepted << Parameters::accepted_what_entries[i];
+            accepted << "\n  - " << entry;
         }
 
         throw std::runtime_error(
-            "Error: '" + str + "' is not a valid entry for 'what'. Accepted values are: " +
-            accepted.str() + ".\n");
+            "Error: '" + str + "' is not a valid entry for 'what'. Accepted values are:" +
+            accepted.str() + "\n");
     }
 }
 //----------------------------------------------------------------------
+// Checks if the provided string is one of the accepted entries for the "parametrization" keyword.
+void String_manipulation::string_parametrization_accepted_entries(const std::string &str, std::string &out)
+{
+    out = str;
+    std::transform(out.begin(), out.end(), out.begin(),
+                   [](unsigned char c)
+                   { return std::tolower(c); });
+    const auto it = std::find(Parameters::accepted_parametrization_entries.begin(),
+                              Parameters::accepted_parametrization_entries.end(),
+                              out);
+    if (it == Parameters::accepted_parametrization_entries.end())
+    {
+        std::ostringstream accepted;
+        for (std::size_t i = 0; i < Parameters::accepted_parametrization_entries.size(); ++i)
+        {
+            if (i > 0)                accepted << ", ";
+            accepted << Parameters::accepted_parametrization_entries[i];
+        }
+        throw std::runtime_error(
+            "Error: '" + str + "' is not a valid entry for 'parametrization'. Accepted values are: " +
+            accepted.str() + ".\n");
+    }
+}

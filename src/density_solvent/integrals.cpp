@@ -37,13 +37,13 @@ void Integrals::solute_solvent_pot_fld(const Target &target, const Density &solu
   const double inv_QMscrnFact = 1.0 / Parameters::QMscrnFact;
   const double sqrt_pi = Parameters::sqrt_pi;
 
-  if (target.what == "potential")
+  if (target.pot_or_fld == "potential")
   {
     solv_pot.assign(n_solvent, {0.0});
     solv_fld.clear();
 
     // Compute only the potential at the solvent coordinates
-#pragma omp parallel for schedule(static) default(none)                                       \
+#pragma omp parallel for schedule(static) default(none) \
     shared(n_solute, n_solvent, xyz_solute, xyz_solvent, rho_solute, inv_QMscrnFact, solv_pot)
     for (int i = 0; i < n_solvent; ++i)
     {
@@ -71,13 +71,13 @@ void Integrals::solute_solvent_pot_fld(const Target &target, const Density &solu
       solv_pot[i][0] = pot_i;
     }
   }
-  else if (target.what == "field")
+  else if (target.pot_or_fld == "field")
   {
     solv_fld.assign(n_solvent, {0.0, 0.0, 0.0});
     solv_pot.clear();
 
     // Compute only the field at the solvent coordinates
-#pragma omp parallel for schedule(static) default(none)                                                   \
+#pragma omp parallel for schedule(static) default(none) \
     shared(n_solute, n_solvent, xyz_solute, xyz_solvent, rho_solute, inv_QMscrnFact, sqrt_pi, solv_fld)
     for (int i = 0; i < n_solvent; ++i)
     {
@@ -106,15 +106,15 @@ void Integrals::solute_solvent_pot_fld(const Target &target, const Density &solu
       solv_fld[i][2] = fld_i[2];
     }
   }
-  else if (target.what == "potential+field")
+  else if (target.pot_or_fld == "potential+field")
   {
 
     solv_pot.assign(n_solvent, {0.0});
     solv_fld.assign(n_solvent, {0.0, 0.0, 0.0});
 
     // Compute both potential and field at the solvent coordinates
-  #pragma omp parallel for schedule(static) default(none)                                                              \
-      shared(n_solute, n_solvent, xyz_solute, xyz_solvent, rho_solute, inv_QMscrnFact, sqrt_pi, solv_pot, solv_fld)
+#pragma omp parallel for schedule(static) default(none) \
+    shared(n_solute, n_solvent, xyz_solute, xyz_solvent, rho_solute, inv_QMscrnFact, sqrt_pi, solv_pot, solv_fld)
     for (int i = 0; i < n_solvent; ++i)
     {
       double pot_i = 0.0;

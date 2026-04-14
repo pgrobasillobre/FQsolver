@@ -71,6 +71,10 @@ int main(int argc, char *argv[])
             algorithm.solute_dens_solvent_pot_fld(target);
             break;
 
+        case TargetMode::FQCharges:
+            algorithm.compute_fq_charges(target);
+            break;
+
         default:
             throw std::runtime_error("No valid calculation target specified in input.");
         }

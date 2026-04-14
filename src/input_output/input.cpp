@@ -1,4 +1,5 @@
 #include "input.hpp"
+#include "parameters.hpp"
 #include "string_manipulation.hpp"
 #include "target.hpp"
 
@@ -200,6 +201,13 @@ void Input::read(Target &target)
         target.is_what_present = true;
     };
     // ========
+    handlers["parametrization"] = [&](const std::string &value)
+    {
+        str_manipulation.string_parametrization_accepted_entries(value, target.parametrization);
+
+        target.is_parametrization_present = true;
+    };
+    // ========
     handlers["debug"] = [&](const std::string &value)
     {
         str_manipulation.string_to_int(value, target.debug);
@@ -285,7 +293,7 @@ void Input::get_target(Target &target)
         throw std::runtime_error("Cutoff cannot be negative.");
     }
     else if (target.integrate_density &&
-             (target.is_solvent_present || target.is_cube_density_present))
+             (target.is_solvent_present || target.is_cube_density_present || target.is_what_present || target.is_parametrization_present))
     {
 
         throw std::runtime_error("You are requesting a density integration with another type of calculation.");
@@ -296,8 +304,7 @@ void Input::get_target(Target &target)
         target.mode = TargetMode::IntegrateCube;
     }
     else if (target.is_solvent_present &&
-             target.is_cube_density_present &&
-             target.is_solvent_present)
+             target.is_cube_density_present)
     {
         if (!target.is_what_present)
         {
@@ -305,7 +312,28 @@ void Input::get_target(Target &target)
         }
         else if (target.what == "potential" || target.what == "field" || target.what == "potential+field")
         {
+            target.pot_or_fld = target.what; // Store the specific calculation type for later use
             target.mode = TargetMode::Solute_Solvent_Pot_Fld;
+        }
+        else if (target.what == "fq")
+        {
+            if (!target.is_parametrization_present)
+            {
+                std::ostringstream accepted;
+                for (const auto entry : Parameters::accepted_parametrization_entries)
+                {
+                    accepted << "\n  - " << entry;
+                }
+
+                throw std::runtime_error(
+                    "FQ charges calculation selected but no parametrization specified. "
+                    "Use the 'parametrization' keyword in the input file to specify one. "
+                    "\n\n Accepted values are:" +
+                    accepted.str());
+            }
+
+            target.pot_or_fld = "potential"; // FQ charges are derived from the potential
+            target.mode = TargetMode::FQCharges;
         }
     }
 
@@ -375,7 +403,7 @@ void Input::print_input_info(const Output &out, const Target &target)
         {
             out.stream() << indent << "Calculation --> Potential\n\n";
         }
-        else if (target.what =="field")
+        else if (target.what == "field")
         {
             out.stream() << indent << "Calculation --> Field\n\n";
         }
@@ -385,27 +413,21 @@ void Input::print_input_info(const Output &out, const Target &target)
         }
         out.stream() << indent << "Solute Density File  : " << target.solute_density_input_file << "\n";
         out.stream() << indent << "Solvent Geometry File: " << target.solvent_input_file << "\n\n";
-        if (target.is_cutoff_present)
-        {
-            out.stream() << indent << "Cutoff               : " << target.cutoff << " Hartree\n\n";
-        }
-        else
-        {
-            out.stream() << indent << "Cutoff               : No\n\n";
-        }
+        out.stream() << indent << "Cutoff               : " << target.cutoff << " Hartree\n\n";
         out.stream() << " " << out.sticks << "\n \n";
         break;
 
-        // case TargetMode::Acceptor_Donor:
-        //     out.stream() << indent << "Calculation --> Acceptor - Donor\n\n";
-        //     out.stream() << indent << "Acceptor Density File: " << target.acceptor_density_input_file << "\n";
-        //     out.stream() << indent << "Donor    Density File: " << target.donor_density_input_file << "\n\n";
+    case TargetMode::FQCharges:
+        out.stream() << indent << "Calculation --> FQ Charges\n\n";
+        out.stream() << indent << "Solute Density File  : " << target.solute_density_input_file << "\n";
+        out.stream() << indent << "Solvent Geometry File: " << target.solvent_input_file << "\n\n";
 
-        //    out.stream() << indent << "Cutoff               : No\n";
+        out.stream() << indent << "Parametrization      : " << target.parametrization << "\n\n";
 
-        //    out.stream() << " " << out.sticks << "\n \n";
+        out.stream() << indent << "Cutoff               : " << target.cutoff << " Hartree\n\n";
 
-        //    break;
+        out.stream() << " " << out.sticks << "\n \n";
+        break;
 
     case TargetMode::None:
     default:

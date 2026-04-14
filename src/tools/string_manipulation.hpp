@@ -31,6 +31,11 @@ public:
     /// @param str Input string to check.
     /// @param out Output variable to store the validated "what" value.
     void string_what_accepted_entries(const std::string &str, std::string &out);
+
+    /// @brief Checks if the provided string is one of the accepted entries for the "parametrization" keyword.
+    /// @param str Input string to check.
+    /// @param out Output variable to store the validated "parametrization" value.
+    void string_parametrization_accepted_entries(const std::string &str, std::string &out);
 };
 //----------------------------------------------------------------------
 /// @brief Moves the stream cursor to the line immediately after a specified marker string.
