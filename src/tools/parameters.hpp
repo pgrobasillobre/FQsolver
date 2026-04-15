@@ -4,6 +4,7 @@
 #include <array>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 
 //----------------------------------------------------------------------
 /// @brief Defines global physical constants and header strings used throughout the application.
@@ -13,6 +14,11 @@
 /// density parsing and output formatting in the FQSolver codebase.
 namespace Parameters
 {
+    struct FQAtomParams
+    {
+        double chi;
+        double eta;
+    };
 
     // Physical constants
     constexpr double pi = 3.14159265358979323846;
@@ -41,6 +47,25 @@ namespace Parameters
     inline constexpr std::array<std::string_view, 2> accepted_solvent_file_extensions = {
         ".xyz",
         ".pdb"};
+
+    inline const std::unordered_map<std::string, std::unordered_map<std::string, FQAtomParams>> fq_params = {
+        {"giovannini",
+         {
+             {"water oxygen", {0.2908429850, 0.5625181140}},
+             {"water hydrogen", {0.1675711970, 0.6093265770}},
+         }}};
+
+    inline const std::unordered_map<std::string, std::unordered_map<std::string, std::string>> fq_label_to_type = {
+        {"giovannini",
+         {
+             {"OW", "water oxygen"},
+             {"O", "water oxygen"},
+             {"HW1", "water hydrogen"},
+             {"HW2", "water hydrogen"},
+             {"H1", "water hydrogen"},
+             {"H2", "water hydrogen"},
+             {"H", "water hydrogen"},
+         }}};
 
     // Header strings (declared here, defined in parameters.cpp)
     extern const std::string solute_header;

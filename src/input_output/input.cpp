@@ -231,9 +231,15 @@ void Input::read(Target &target)
     // ========
     handlers["parametrization"] = [&](const std::string &value)
     {
-        str_manipulation.string_parametrization_accepted_entries(value, target.parametrization);
+        str_manipulation.string_parametrization_accepted_entries(value, target.fq_parametrization);
 
         target.is_parametrization_present = true;
+    };
+    // ========
+    handlers["molecular charge"] = [&](const std::string &value)
+    {
+        // If MolCharge is not present, default is 0.0.
+        str_manipulation.string_to_float(value, target.MolCharge);
     };
     // ========
     handlers["debug"] = [&](const std::string &value)
@@ -450,7 +456,7 @@ void Input::print_input_info(const Output &out, const Target &target)
         out.stream() << indent << "Solute Density File  : " << target.solute_density_input_file << "\n";
         out.stream() << indent << "Solvent Geometry File: " << target.solvent_input_file << "\n\n";
 
-        out.stream() << indent << "Parametrization      : " << target.parametrization << "\n\n";
+        out.stream() << indent << "Parametrization      : " << target.fq_parametrization << "\n\n";
 
         out.stream() << indent << "Cutoff               : " << target.cutoff << " Hartree\n\n";
 

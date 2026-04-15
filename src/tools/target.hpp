@@ -24,7 +24,7 @@ struct Target
     std::string pot_or_fld; ///< Specific calculation type for potential/field (set later based on "what")
 
     // FQ parametrization
-    std::string parametrization; ///< Parametrization to use for FQ charge calculation (e.g., "giovannini")
+    std::string fq_parametrization; ///< Parametrization to use for FQ charge calculation (e.g., "giovannini")
 
     // Solvent -  geometry
     bool is_solvent_present = false; ///< Whether a solvent file is provided.
@@ -53,6 +53,7 @@ struct Target
     bool is_debug_present; ///< Debug mode enabled
 
     double cutoff = 0.0; ///< Cutoff energy (Hartree) for density grid reduction
+    double MolCharge = 0.0; ///< Total molecular charge (for debugging purposes)
 
     int debug = 0;
     int n_threads_OMP = 1; ///< Number of threads for OpenMP parallelism

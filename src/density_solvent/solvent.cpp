@@ -63,13 +63,13 @@ void Solvent::check_solvent_file_extension(const std::string &str, const Target 
     if (!target.is_group_present)
     {
       throw std::runtime_error(
-          "Solvent file has .pdb extension, but no 'group' keyword found in the input file. Please specify a residue/group name to read from the PDB solvent file using the 'group' keyword.\n");
+          "Solvent file has .pdb extension, but no 'group' keyword found in the input file. \n\n Please specify a residue/group name to read from the PDB solvent file using the 'group' keyword.\n");
     }
 
     if (!target.is_read_atoms_present)
     {
       throw std::runtime_error(
-          "Solvent file has .pdb extension, but no 'read atoms' keyword found in the input file. Please specify atom names to read from the PDB solvent file using the 'read atoms' keyword.\n");
+          "Solvent file has .pdb extension, but no 'read atoms' keyword found in the input file. \n\n Please specify atom names to read from the PDB solvent file using the 'read atoms' keyword.\n");
     }
   }
 }
@@ -139,6 +139,12 @@ void Solvent::read_solvent_geometry(const std::string &filepath, const Target &t
   else
   {
     throw std::runtime_error("Unsupported solvent file extension: " + solvent_file_extension);
+  }
+
+  // Assign parameters for FQ charge calculation based on atom types.
+  if (target.is_parametrization_present)
+  {
+    assign_solvent_parameters(target.fq_parametrization);
   }
 }
 //----------------------------------------------------------------------
@@ -348,4 +354,87 @@ void Solvent::read_solvent(const Target &target, const Output &out)
   // Check file with given extension is not corrupted (e.g., missing lines, wrong format).
   read_solvent_geometry(filepath, target);
 }
-//----------------------------------------------------------------------
+// ----------------------------------------------------------------------
+void Solvent::assign_solvent_parameters(const std::string &parametrization)
+{
+  const auto param_set = Parameters::fq_params.find(parametrization);
+  if (param_set == Parameters::fq_params.end())
+  {
+    throw std::runtime_error("Unsupported FQ parametrization: " + parametrization);
+  }
+
+  const auto label_map = Parameters::fq_label_to_type.find(parametrization);
+  if (label_map == Parameters::fq_label_to_type.end())
+  {
+    throw std::runtime_error("Missing atom label map for FQ parametrization: " + parametrization);
+  }
+
+  typeIndex.assign(natoms, -1);
+  typeName.clear();
+  typeChi.clear();
+  typeEta.clear();
+  tempTqq.assign(natoms, std::vector<double>(natoms, 0.0));
+
+  std::unordered_map<std::string, int> type_name_to_index;
+
+  for (int i = 0; i < natoms; ++i)
+  {
+    const std::string &label = atomic_label[i];
+    const auto type_name = label_map->second.find(label);
+    if (type_name == label_map->second.end())
+    {
+      throw std::runtime_error(
+          "Unsupported atom label \"" + label + "\" for FQ parametrization \"" + parametrization + "\".\n"
+                                                                                                   "\n"
+                                                                                                   "Supported atom labels are:\n"
+                                                                                                   "  - Oxygen:  OW, O\n"
+                                                                                                   "  - Hydrogen: HW1, HW2, H1, H2, H\n"
+                                                                                                   "\n"
+                                                                                                   "Atom labels are case-sensitive.");
+    }
+
+    const auto params = param_set->second.find(type_name->second);
+    if (params == param_set->second.end())
+    {
+      throw std::runtime_error(
+          "Missing FQ parameters for atom type \"" + type_name->second +
+          "\" in parametrization \"" + parametrization + "\".");
+    }
+
+    auto type_index = type_name_to_index.find(type_name->second);
+    if (type_index == type_name_to_index.end())
+    {
+      const int new_type_index = static_cast<int>(typeName.size());
+      type_name_to_index[type_name->second] = new_type_index;
+      typeName.push_back(type_name->second);
+      typeChi.push_back(params->second.chi);
+      typeEta.push_back(params->second.eta);
+      typeIndex[i] = new_type_index;
+    }
+    else
+    {
+      typeIndex[i] = type_index->second;
+    }
+  }
+
+  // Final check: ensure all atoms were assigned a valid type index.
+  for (int i = 0; i < natoms; ++i)
+  {
+    if (typeIndex[i] == -1)
+    {
+      throw std::runtime_error(
+          "Failed to assign FQ parameters for atom \"" + atomic_label[i] + "\" at index " + std::to_string(i) +
+          ". This should not happen if all atom labels are supported and parameters are provided, but something went wrong during parameter assignment.");
+    }
+  }
+
+  // Store the number of unique atom types.
+  ntypes = static_cast<int>(typeName.size());
+
+  // Compute Gaussian widths for charge distribution based on the FQ parameters, using the formula Rq = sqrt(2/pi)/eta.
+  typeRq.assign(ntypes, 0.0);
+  for (int i = 0; i < ntypes; ++i)
+  {
+    typeRq[i] = std::sqrt(2.0 / Parameters::pi) / typeEta[i];
+  }
+}
