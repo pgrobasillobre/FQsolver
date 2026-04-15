@@ -38,8 +38,9 @@ namespace Parameters
         "giovannini"};
 
     // Accepted solvent file extensions
-    inline constexpr std::array<std::string_view, 1> accepted_solvent_file_extensions = {
-        ".xyz"};
+    inline constexpr std::array<std::string_view, 2> accepted_solvent_file_extensions = {
+        ".xyz",
+        ".pdb"};
 
     // Header strings (declared here, defined in parameters.cpp)
     extern const std::string solute_header;

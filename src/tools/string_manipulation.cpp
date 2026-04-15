@@ -20,11 +20,11 @@ void String_manipulation::string_to_float(const std::string &str, double &out)
     }
     catch (const std::invalid_argument &)
     {
-        throw std::runtime_error("Error: '" + str + "' is not a valid float.\n");
+        throw std::runtime_error("'" + str + "' is not a valid float.\n");
     }
     catch (const std::out_of_range &)
     {
-        throw std::runtime_error("Error: '" + str + "' is out of range for a float.\n");
+        throw std::runtime_error("'" + str + "' is out of range for a float.\n");
     }
 }
 //----------------------------------------------------------------------
@@ -37,11 +37,11 @@ void String_manipulation::string_to_int(const std::string &str, int &out)
     }
     catch (const std::invalid_argument &)
     {
-        throw std::runtime_error("Error: '" + str + "' is not a valid integer.\n");
+        throw std::runtime_error("'" + str + "' is not a valid integer.\n");
     }
     catch (const std::out_of_range &)
     {
-        throw std::runtime_error("Error: '" + str + "' is out of range for an integer.\n");
+        throw std::runtime_error("'" + str + "' is out of range for an integer.\n");
     }
 }
 //----------------------------------------------------------------------
@@ -67,7 +67,7 @@ void String_manipulation::string_what_accepted_entries(const std::string &str, s
         }
 
         throw std::runtime_error(
-            "Error: '" + str + "' is not a valid entry for 'what'. Accepted values are:" +
+            "'" + str + "' is not a valid entry for 'what'. Accepted values are:" +
             accepted.str() + "\n");
     }
 }
@@ -91,7 +91,7 @@ void String_manipulation::string_parametrization_accepted_entries(const std::str
             accepted << Parameters::accepted_parametrization_entries[i];
         }
         throw std::runtime_error(
-            "Error: '" + str + "' is not a valid entry for 'parametrization'. Accepted values are: " +
+            "'" + str + "' is not a valid entry for 'parametrization'. Accepted values are: " +
             accepted.str() + ".\n");
     }
 }

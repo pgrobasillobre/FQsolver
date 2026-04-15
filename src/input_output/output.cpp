@@ -143,15 +143,37 @@ void Output::print_solvent(const Target &target, const Solvent &solv)
     log_stream << std::string(29, ' ') << "Solvent Information                    \n \n";
     log_stream << " " << sticks << "\n \n";
     log_stream << std::string(3, ' ') << "Solvent Geometry File: " << std::filesystem::path(target.solvent_file).filename().string() << "\n \n";
-    log_stream << std::string(3, ' ') << "Number of solvent atoms: " << solv.natoms << "\n \n";
-    log_stream << std::string(3, ' ') << "Solvent Atomic Coordinates (Å): \n \n";
-    for (int i = 0; i < solv.natoms; ++i)
+    log_stream << std::string(3, ' ') << "Number of solvent atoms: " << solv.natoms << "\n";
+    if (solv.nmol > 0)
     {
-        print_formatted_line2(log_stream, std::string(solv.atomic_label[i]),
-                              solv.xyz[i][0] * Parameters::ToAng,
-                              solv.xyz[i][1] * Parameters::ToAng,
-                              solv.xyz[i][2] * Parameters::ToAng);
+        log_stream << std::string(3, ' ') << "Number of solvent molecules: " << solv.nmol << "\n \n";
+        log_stream << std::string(3, ' ') << "Solvent Atomic Coordinates (Å): \n \n";
+        log_stream << std::string(4, ' ') << "Atom name         X             Y             Z          Mol. Index: \n";
+        log_stream << std::string(4, ' ') << "---------     ---------     ---------     ---------     ------------ \n";
+        for (int i = 0; i < solv.natoms; ++i)
+        {
+            print_formatted_line4(log_stream, std::string(solv.atomic_label[i]),
+                                  solv.xyz[i][0] * Parameters::ToAng,
+                                  solv.xyz[i][1] * Parameters::ToAng,
+                                  solv.xyz[i][2] * Parameters::ToAng,
+                                  solv.MolIndex[i][0]);
+        }
     }
+    else
+    {
+        log_stream << std::string(3, ' ') << "\n";
+        log_stream << std::string(3, ' ') << "Solvent Atomic Coordinates (Å): \n \n";
+        log_stream << std::string(4, ' ') << "Atom name         X             Y             Z     \n";
+        log_stream << std::string(4, ' ') << "---------     ---------     ---------     --------- \n";
+        for (int i = 0; i < solv.natoms; ++i)
+        {
+            print_formatted_line2(log_stream, std::string(solv.atomic_label[i]),
+                                  solv.xyz[i][0] * Parameters::ToAng,
+                                  solv.xyz[i][1] * Parameters::ToAng,
+                                  solv.xyz[i][2] * Parameters::ToAng);
+        }
+    }
+
     log_stream << " \n " << sticks << "\n\n";
 }
 //----------------------------------------------------------------------
@@ -167,7 +189,7 @@ void Output::print_formatted_line1(std::ostream &out, int i, double a, double b,
 void Output::print_formatted_line2(std::ostream &out, const std::string atom, double x, double y, double z) const
 {
     char line[100];
-    std::snprintf(line, sizeof(line), "       %-2s  %12.6f  %12.6f  %12.6f\n", atom.c_str(), x, y, z);
+    std::snprintf(line, sizeof(line), "        %-3s    %12.6f  %12.6f  %12.6f\n", atom.c_str(), x, y, z);
     out << line;
 }
 // ----------------------------------------------------------------------
@@ -176,6 +198,14 @@ void Output::print_formatted_line3(std::ostream &out, const std::string atom, do
 {
     char line[100];
     std::snprintf(line, sizeof(line), "              %-2s  %19.6f %19.6f %19.6f\n", atom.c_str(), x, y, z);
+    out << line;
+}
+// ----------------------------------------------------------------------
+// Prints a formatted atomic line with molecular index, when solvent is loaded from PDB files and molecule index is available.
+void Output::print_formatted_line4(std::ostream &out, const std::string atom, double x, double y, double z, int mol_index)
+{
+    char line[100];
+    std::snprintf(line, sizeof(line), "       %-5s   %12.6f  %12.6f  %12.6f        %5d\n", atom.c_str(), x, y, z, mol_index);
     out << line;
 }
 //----------------------------------------------------------------------

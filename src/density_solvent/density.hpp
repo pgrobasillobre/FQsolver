@@ -18,9 +18,9 @@ class Output; // Forward declaration
 /// and the density grid. Provides routines to read densities from inputs
 /// described by @ref Target, integrate the density, and perform basic
 /// geometric operations (centers, rotations, etc.).
-class Density {
+class Density
+{
 public:
-
     // ---- Raw metadata from the cube file (descriptive header lines) ----
     std::string str1, str2;
 
@@ -30,14 +30,14 @@ public:
     int n_points_reduced = 0;
 
     // ---- Atomic data (size natoms) ----
-    std::vector<int> atomic_number;              ///< Atomic numbers of the atoms
-    std::vector<std::string> atomic_label;       ///< Element symbols
-    std::vector<double> atomic_charge;           ///< Atomic charges
-    std::vector<double> x, y, z;                 ///< Atomic positions
+    std::vector<int> atomic_number;        ///< Atomic numbers of the atoms
+    std::vector<std::string> atomic_label; ///< Element symbols
+    std::vector<double> atomic_charge;     ///< Atomic charges
+    std::vector<double> x, y, z;           ///< Atomic positions
 
     // ---- Grid origin and voxel vectors ----
     double xmin = 0.0, ymin = 0.0, zmin = 0.0;
-    std::array<double, 3> dx{}, dy{}, dz{};      ///< Voxel vectors in each direction
+    std::array<double, 3> dx{}, dy{}, dz{}; ///< Voxel vectors in each direction
 
     // ---- Density data ----
     /// 3D density grid: rho[ix][iy][iz] in e/Å^3 (units may depend on source)
@@ -48,14 +48,13 @@ public:
     std::vector<std::array<double, 3>> xyz;
 
     // ---- Derived quantities ----
-    double maxdens = 0.0;  ///< Maximum density value in the grid
-    double volume = 0.0;   ///< Total grid volume (a.u.^3)
-    
-    std::array<double, 3> geom_center = {0.0, 0.0, 0.0}; ///< Geometric center of the density
+    double maxdens = 0.0; ///< Maximum density value in the grid
+    double volume = 0.0;  ///< Total grid volume (a.u.^3)
+
+    std::array<double, 3> geom_center = {0.0, 0.0, 0.0};     ///< Geometric center of the density
     std::array<double, 3> geom_center_mol = {0.0, 0.0, 0.0}; ///< Geometric center of the molecule
 
-    double integral = 0.0;  ///< Integral of the density over the full grid
-
+    double integral = 0.0; ///< Integral of the density over the full grid
 
     // ---- API ----
 
@@ -63,18 +62,16 @@ public:
     /// @param target  Input descriptor providing file names and calculation context.
     /// @param out     Output/logging sink.
     /// @param what_dens Optional role tag (e.g., "Acceptor", "Donor", "Cube").
-    void read_density(Target& target, const Output& out, const std::string& what_dens = "");
+    void read_density(Target &target, const Output &out, const std::string &what_dens = "");
 
     /// @brief Integrates the full 3D density grid to obtain total electrons.
     void int_density();
 
 private:
-
     /// @brief Maps atomic number to the element symbol.
     /// @param Z Atomic number.
     /// @return Element symbol (e.g., "H", "He", "C").
     std::string map_atomic_number_to_label(int Z) const;
-
 };
 
 #endif // DENSITY_HPP

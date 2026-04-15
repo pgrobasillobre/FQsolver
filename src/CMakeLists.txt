@@ -12,6 +12,7 @@ target_sources(FQSolver
         ${CMAKE_CURRENT_SOURCE_DIR}/tools/string_manipulation.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/tools/timer.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/tools/parameters.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/pol_embed/fq.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
 )
 
@@ -23,5 +24,6 @@ target_include_directories(FQSolver
         ${CMAKE_CURRENT_SOURCE_DIR}/tools
         ${CMAKE_CURRENT_SOURCE_DIR}/algorithm
         ${CMAKE_CURRENT_SOURCE_DIR}/density_solvent
+        ${CMAKE_CURRENT_SOURCE_DIR}/pol_embed
 )
 

@@ -186,6 +186,34 @@ void Input::read(Target &target)
         target.is_solvent_present = true;
     };
     // ========
+    handlers["read atoms"] = [&](const std::string &value)
+    {
+        target.read_atoms.clear();
+
+        std::istringstream atoms(value);
+        std::string atom;
+        while (std::getline(atoms, atom, ','))
+        {
+            atom.erase(0, atom.find_first_not_of(" \t\"'"));
+            atom.erase(atom.find_last_not_of(" \t\"'") + 1);
+            if (!atom.empty())
+            {
+                target.read_atoms.push_back(atom);
+            }
+        }
+
+        target.is_read_atoms_present = true;
+    };
+    // ========
+    handlers["group"] = [&](const std::string &value)
+    {
+        target.read_group = value;
+        target.read_group.erase(0, target.read_group.find_first_not_of(" \t\"'"));
+        target.read_group.erase(target.read_group.find_last_not_of(" \t\"'") + 1);
+
+        target.is_group_present = true;
+    };
+    // ========
     handlers["cutoff"] = [&](const std::string &value)
     {
         str_manipulation.string_to_float(value, target.cutoff);

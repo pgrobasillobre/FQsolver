@@ -5,6 +5,7 @@
 #include "parameters.hpp"
 #include "integrals.hpp"
 #include "solvent.hpp"
+#include "fq.hpp"
 
 #include <iostream>
 
@@ -87,5 +88,5 @@ void Algorithm::compute_fq_charges(Target &target)
     //
     //  Compute FQ charges from potential and solvent parameters
     //
-    // integrals.compute_fq_charges(target, solv, integrals);
+    fq.calc_charges(target, solv);
 }

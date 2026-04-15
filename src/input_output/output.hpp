@@ -113,6 +113,16 @@ private:
     /// @param z Z-coordinate.
     void print_formatted_line3(std::ostream &out, const std::string atom, double x, double y, double z);
 
+
+    /// @brief Prints atom name, coordinates, and molecule index (for solvents loaded from PDB).
+    /// @param out Output stream.
+    /// @param atom Atom label (e.g., "C").
+    /// @param x X-coordinate.
+    /// @param y Y-coordinate.
+    /// @param z Z-coordinate.
+    /// @param mol_index Index of the molecule the atom belongs to.
+    void print_formatted_line4(std::ostream &out, const std::string atom, double x, double y, double z, int mol_index);
+
     /// @brief Format string for printing index and coordinates.
     std::string format1 = "   {:5d} {:15.7E} {:15.7E} {:15.7E}\n";
 

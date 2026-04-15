@@ -6,6 +6,7 @@
 #include "density.hpp"
 #include "integrals.hpp"
 #include "solvent.hpp"
+#include "fq.hpp"
 
 //----------------------------------------------------------------------
 /// @class Algorithm
@@ -46,6 +47,7 @@ private:
     Density cube_solute; ///< Density associated with the solute
     Integrals integrals; ///< Integral evaluator for couplings.
     Solvent solv;        ///< Solvent representation.
+    FQ fq;               ///< FQ charge calculator.
 };
 
 #endif

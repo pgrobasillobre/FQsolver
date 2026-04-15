@@ -21,6 +21,7 @@ class Solvent
 {
 public:
   int natoms = 0; ///< Number of atoms in the solvent.
+  int nmol = 0;  ///< Number of solvent molecules (for FQ charge calculation).
 
   bool potential = false;           ///< True if only potential calculation is requested.
   bool field = false;               ///< True if only field calculation is requested.
@@ -29,7 +30,10 @@ public:
   std::vector<std::array<double, 1>> solv_pot; // Scalar potential at each atomic site
   std::vector<std::array<double, 3>> solv_fld; // Electric field vector at each atomic site
 
+  std::vector<std::array<int, 1>> MolIndex;    // Index of the molecule each atom belongs to (for FQ charge calculation)
+
   std::vector<std::array<double, 3>> xyz; // XYZ coordinates
+
   std::vector<std::string> atomic_label;  //< Atomic labels (e.g., "C", "O").
 
   std::string solvent_file_extension; ///< Extension of the solvent geometry file (e.g., ".xyz").
@@ -48,15 +52,21 @@ private:
   
   /// @brief Verifies that the solvent file has the expected extension.
   /// @param filepath Path to the solvent geometry file.
-  void check_solvent_file_extension(const std::string &str);
+  /// @param target Target object providing expected file extension information.
+  void check_solvent_file_extension(const std::string &str, const Target &target);
 
   /// @brief Selects the appropriate method to read solvent geometry based on file extension.
   /// @param filepath Path to the solvent geometry file.
-  void read_solvent_geometry(const std::string &filepath);
+  void read_solvent_geometry(const std::string &filepath, const Target &target);
 
   /// @brief Reads solvent geometry from an XYZ file.
   /// @param filepath Path to the XYZ file containing solvent geometry.
   void read_solvent_geometry_xyz(const std::string &filepath);
+
+  /// @brief Reads solvent geometry from a PDB file.
+  /// @param filepath Path to the PDB file containing solvent geometry.
+  /// @param target Target object providing optional PDB filters.
+  void read_solvent_geometry_pdb(const std::string &filepath, const Target &target);
 };
 
 #endif // SOLVENT_HPP
