@@ -24,6 +24,8 @@ public:
   int nmol = 0;   ///< Number of solvent molecules (for FQ charge calculation).
   int ntypes = 0; ///< Number of unique atom types (for FQ charge calculation).
 
+  double MolCharge = 0.0; ///< Total molecular charge (for debugging purposes).
+
   bool potential = false;           ///< True if only potential calculation is requested.
   bool field = false;               ///< True if only field calculation is requested.
   bool potential_and_field = false; ///< True if potential and field calculation is requested.
@@ -37,7 +39,7 @@ public:
   std::vector<double> typeChi;                 // FQ electronegativity by atom type
   std::vector<double> typeEta;                 // FQ hardness by atom type
   std::vector<double> typeRq;                  // Gaussian width for charges probability distribution by atom type (for FQ charge calculation)
-  
+
   std::vector<std::array<double, 1>> solv_pot; // Scalar potential at each atomic site
   std::vector<std::array<double, 3>> solv_fld; // Electric field vector at each atomic site
   std::vector<std::array<double, 3>> xyz;      // XYZ coordinates
@@ -47,6 +49,7 @@ public:
   std::vector<std::string> atomic_label; //< Atomic labels (e.g., "C", "O").
 
   std::string solvent_file_extension; ///< Extension of the solvent geometry file (e.g., ".xyz").
+  std::string fq_kernel = "gaus";      ///< FQ solvent-solvent interaction kernel.
 
   /// @brief Loads solvent coordinates from the specified file.
   /// @param target Target object providing file paths.

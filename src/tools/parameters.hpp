@@ -43,6 +43,12 @@ namespace Parameters
     inline constexpr std::array<std::string_view, 1> accepted_parametrization_entries = {
         "giovannini"};
 
+    // Accepted entries for the "kernel" keyword
+    inline constexpr std::array<std::string_view, 3> accepted_kernel_entries = {
+        "gaus",
+        "ohno",
+        "coul"};
+
     // Accepted solvent file extensions
     inline constexpr std::array<std::string_view, 2> accepted_solvent_file_extensions = {
         ".xyz",

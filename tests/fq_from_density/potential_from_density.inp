@@ -1,5 +1,6 @@
 what: fq
 parametrization: giovannini
+kernel: gaus
 
 solvent: solvent/frame186_18.pdb
 group: sol x

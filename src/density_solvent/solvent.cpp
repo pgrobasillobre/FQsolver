@@ -115,14 +115,6 @@ bool parse_int(const std::string &token, int &value)
   }
 }
 
-std::string uppercase_copy(std::string value)
-{
-  std::transform(value.begin(), value.end(), value.begin(),
-                 [](unsigned char c)
-                 { return std::toupper(c); });
-  return value;
-}
-
 //----------------------------------------------------------------------
 void Solvent::read_solvent_geometry(const std::string &filepath, const Target &target)
 {
@@ -244,16 +236,23 @@ void Solvent::read_solvent_geometry_pdb(const std::string &filepath, const Targe
   xyz.clear();
   MolIndex.clear();
 
-  std::vector<std::string> read_atoms_upper;
-  read_atoms_upper.reserve(target.read_atoms.size());
+  std::vector<std::string> read_atoms_lower;
+  read_atoms_lower.reserve(target.read_atoms.size());
   MolIndex.reserve(target.read_atoms.size());
 
   for (const auto &atom : target.read_atoms)
   {
-    read_atoms_upper.push_back(uppercase_copy(atom));
+    std::string atom_lower = atom;
+    std::transform(atom_lower.begin(), atom_lower.end(), atom_lower.begin(),
+                   [](unsigned char c)
+                   { return std::tolower(c); });
+    read_atoms_lower.push_back(atom_lower);
   }
 
-  const std::string read_group_upper = uppercase_copy(target.read_group);
+  std::string read_group_lower = target.read_group;
+  std::transform(read_group_lower.begin(), read_group_lower.end(), read_group_lower.begin(),
+                 [](unsigned char c)
+                 { return std::tolower(c); });
   int previous_molecule_id = 0;
   bool has_previous_molecule_id = false;
   nmol = 0;
@@ -274,14 +273,22 @@ void Solvent::read_solvent_geometry_pdb(const std::string &filepath, const Targe
     // PDB-like whitespace columns: atom name = 3. The configured group may span columns.
     const std::string atom_name = tokens[2];
 
-    if (!read_atoms_upper.empty() &&
-        std::find(read_atoms_upper.begin(), read_atoms_upper.end(), uppercase_copy(atom_name)) == read_atoms_upper.end())
+    std::string atom_name_lower = atom_name;
+    std::transform(atom_name_lower.begin(), atom_name_lower.end(), atom_name_lower.begin(),
+                   [](unsigned char c)
+                   { return std::tolower(c); });
+
+    if (!read_atoms_lower.empty() &&
+        std::find(read_atoms_lower.begin(), read_atoms_lower.end(), atom_name_lower) == read_atoms_lower.end())
     {
       continue;
     }
 
-    const std::string line_upper = uppercase_copy(line);
-    const std::size_t group_pos = line_upper.find(read_group_upper);
+    std::string line_lower = line;
+    std::transform(line_lower.begin(), line_lower.end(), line_lower.begin(),
+                   [](unsigned char c)
+                   { return std::tolower(c); });
+    const std::size_t group_pos = line_lower.find(read_group_lower);
     if (group_pos == std::string::npos)
     {
       continue;
@@ -339,6 +346,9 @@ void Solvent::read_solvent_geometry_pdb(const std::string &filepath, const Targe
   {
     throw std::runtime_error("No PDB atoms matched the requested solvent filters in file \"" + filepath + "\".");
   }
+
+  // Store MolCharge from target in solvent object
+  MolCharge = target.MolCharge;
 }
 //----------------------------------------------------------------------
 // Load solvent data: coordinates.
@@ -353,6 +363,9 @@ void Solvent::read_solvent(const Target &target, const Output &out)
 
   // Check file with given extension is not corrupted (e.g., missing lines, wrong format).
   read_solvent_geometry(filepath, target);
+
+  // Store the FQ kernel selected in the input file.
+  fq_kernel = target.fq_kernel;
 }
 // ----------------------------------------------------------------------
 void Solvent::assign_solvent_parameters(const std::string &parametrization)

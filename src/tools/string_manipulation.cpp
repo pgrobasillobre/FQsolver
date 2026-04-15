@@ -7,6 +7,7 @@
 #include <istream>
 #include <string_view>
 #include <algorithm>
+#include <cctype>
 #include <sstream>
 
 
@@ -92,6 +93,30 @@ void String_manipulation::string_parametrization_accepted_entries(const std::str
         }
         throw std::runtime_error(
             "'" + str + "' is not a valid entry for 'parametrization'. Accepted values are: " +
+            accepted.str() + ".\n");
+    }
+}
+// ----------------------------------------------------------------
+// Checks if the provided string is one of the accepted entries for the "kernel" keyword.
+void String_manipulation::string_kernel_accepted_entries(const std::string &str, std::string &out)
+{
+    out = str;
+    std::transform(out.begin(), out.end(), out.begin(),
+                   [](unsigned char c)
+                   { return std::tolower(c); });
+    const auto it = std::find(Parameters::accepted_kernel_entries.begin(),
+                              Parameters::accepted_kernel_entries.end(),
+                              out);
+    if (it == Parameters::accepted_kernel_entries.end())
+    {
+        std::ostringstream accepted;
+        for (std::size_t i = 0; i < Parameters::accepted_kernel_entries.size(); ++i)
+        {
+            if (i > 0)                accepted << ", ";
+            accepted << Parameters::accepted_kernel_entries[i];
+        }
+        throw std::runtime_error(
+            "'" + str + "' is not a valid entry for 'kernel'. Accepted values are: " +
             accepted.str() + ".\n");
     }
 }

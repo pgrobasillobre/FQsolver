@@ -229,6 +229,11 @@ void Input::read(Target &target)
         target.is_what_present = true;
     };
     // ========
+    handlers["kernel"] = [&](const std::string &value)
+    {
+        str_manipulation.string_kernel_accepted_entries(value, target.fq_kernel);
+    };
+    // ========
     handlers["parametrization"] = [&](const std::string &value)
     {
         str_manipulation.string_parametrization_accepted_entries(value, target.fq_parametrization);
@@ -456,7 +461,8 @@ void Input::print_input_info(const Output &out, const Target &target)
         out.stream() << indent << "Solute Density File  : " << target.solute_density_input_file << "\n";
         out.stream() << indent << "Solvent Geometry File: " << target.solvent_input_file << "\n\n";
 
-        out.stream() << indent << "Parametrization      : " << target.fq_parametrization << "\n\n";
+        out.stream() << indent << "Parametrization      : " << target.fq_parametrization << "\n";
+        out.stream() << indent << "Kernel               : " << target.fq_kernel << "\n\n";
 
         out.stream() << indent << "Cutoff               : " << target.cutoff << " Hartree\n\n";
 
