@@ -2,9 +2,12 @@ what: fq
 parametrization: giovannini
 kernel: gaus
 
-solvent: solvent/frame186_18.pdb
+#solvent: solvent/frame186_18.pdb
+solvent: solvent/small.pdb
 group: sol x
 read atoms: OW, HW1, HW2
 
 density: density/pdi_trans1.cube
 cutoff: 1e-03
+
+debug: 2

@@ -12,6 +12,7 @@
 #include <cstdio>
 #include <string>
 #include <ostream>
+#include <vector>
 
 class Input; // Forward declaration of Input to avoid circular dependency
 
@@ -72,6 +73,21 @@ public:
     void print_cube_coordinates(const std::string what_dens,
                                 const int n_points,
                                 const std::vector<std::array<double, 3>> &xyz) const;
+
+    /// @brief Prints a matrix in 5-column blocks.
+    /// @param title Section title printed above the matrix.
+    /// @param matrix Matrix to print.
+    void print_matrix(const std::string &title, const std::vector<std::vector<double>> &matrix) const;
+
+    /// @brief Prints a packed triangular matrix by temporarily reconstructing its full dense form.
+    /// @param title Section title printed above the matrix.
+    /// @param packed_matrix Packed triangular matrix.
+    /// @param order Order of the reconstructed square matrix.
+    /// @param triangle Stored triangle: "L" for lower or "U" for upper.
+    void print_matrix(const std::string &title,
+                      const std::vector<double> &packed_matrix,
+                      int order,
+                      const std::string &triangle) const;
 
     /// @brief Prints nanoparticle coordinates and dipoles, if present.
     /// @param infile Source file name.

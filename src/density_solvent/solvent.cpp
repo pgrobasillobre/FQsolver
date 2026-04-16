@@ -235,10 +235,14 @@ void Solvent::read_solvent_geometry_pdb(const std::string &filepath, const Targe
   atomic_label.clear();
   xyz.clear();
   MolIndex.clear();
+  atomsToMol.clear();
+  indexToMol.clear();
+  atomsToIndex.clear();
 
   std::vector<std::string> read_atoms_lower;
   read_atoms_lower.reserve(target.read_atoms.size());
   MolIndex.reserve(target.read_atoms.size());
+  atomsToMol.reserve(target.read_atoms.size());
 
   for (const auto &atom : target.read_atoms)
   {
@@ -253,8 +257,6 @@ void Solvent::read_solvent_geometry_pdb(const std::string &filepath, const Targe
   std::transform(read_group_lower.begin(), read_group_lower.end(), read_group_lower.begin(),
                  [](unsigned char c)
                  { return std::tolower(c); });
-  int previous_molecule_id = 0;
-  bool has_previous_molecule_id = false;
   nmol = 0;
 
   while (std::getline(infile, line))
@@ -325,18 +327,11 @@ void Solvent::read_solvent_geometry_pdb(const std::string &filepath, const Targe
       throw std::runtime_error("File \"" + filepath + "\" is corrupted: invalid PDB coordinate line \"" + line + "\".");
     }
 
-    if (!has_previous_molecule_id || molecule_id != previous_molecule_id)
-    {
-      ++nmol;
-      previous_molecule_id = molecule_id;
-      has_previous_molecule_id = true;
-    }
-
     coords[0] = x * Parameters::ToBohr;
     coords[1] = y * Parameters::ToBohr;
     coords[2] = z * Parameters::ToBohr;
 
-    MolIndex.push_back({nmol});
+    atomsToMol.push_back(molecule_id);
     atomic_label.push_back(atom_name);
     xyz.push_back(coords);
   }
@@ -346,6 +341,8 @@ void Solvent::read_solvent_geometry_pdb(const std::string &filepath, const Targe
   {
     throw std::runtime_error("No PDB atoms matched the requested solvent filters in file \"" + filepath + "\".");
   }
+
+  assign_molecule_indices();
 
   // Store MolCharge from target in solvent object
   MolCharge = target.MolCharge;
@@ -386,7 +383,6 @@ void Solvent::assign_solvent_parameters(const std::string &parametrization)
   typeName.clear();
   typeChi.clear();
   typeEta.clear();
-  tempTqq.assign(natoms, std::vector<double>(natoms, 0.0));
 
   std::unordered_map<std::string, int> type_name_to_index;
 
@@ -449,5 +445,40 @@ void Solvent::assign_solvent_parameters(const std::string &parametrization)
   for (int i = 0; i < ntypes; ++i)
   {
     typeRq[i] = std::sqrt(2.0 / Parameters::pi) / typeEta[i];
+  }
+}
+//----------------------------------------------------------------------
+// Builds compact molecule indices from original molecule labels.
+void Solvent::assign_molecule_indices()
+{
+  indexToMol.clear();
+  atomsToIndex.assign(atomsToMol.size(), -1);
+
+  for (const int molecule_label : atomsToMol)
+  {
+    if (std::find(indexToMol.begin(), indexToMol.end(), molecule_label) == indexToMol.end())
+    {
+      indexToMol.push_back(molecule_label);
+    }
+  }
+
+  for (std::size_t i = 0; i < atomsToMol.size(); ++i)
+  {
+    const auto molecule_index = std::find(indexToMol.begin(), indexToMol.end(), atomsToMol[i]);
+    if (molecule_index == indexToMol.end())
+    {
+      throw std::runtime_error("Failed to assign compact molecule index for solvent atom.");
+    }
+
+    atomsToIndex[i] = static_cast<int>(std::distance(indexToMol.begin(), molecule_index));
+  }
+
+  nmol = static_cast<int>(indexToMol.size());
+
+  MolIndex.clear();
+  MolIndex.reserve(atomsToIndex.size());
+  for (const int compact_index : atomsToIndex)
+  {
+    MolIndex.push_back({compact_index + 1});
   }
 }

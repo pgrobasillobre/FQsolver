@@ -143,10 +143,12 @@ void Output::print_solvent(const Target &target, const Solvent &solv)
     log_stream << std::string(29, ' ') << "Solvent Information                    \n \n";
     log_stream << " " << sticks << "\n \n";
     log_stream << std::string(3, ' ') << "Solvent Geometry File: " << std::filesystem::path(target.solvent_file).filename().string() << "\n \n";
-    log_stream << std::string(3, ' ') << "Number of solvent atoms: " << solv.natoms << "\n";
+    log_stream << std::string(3, ' ') << "Number of solvent atoms    : " << solv.natoms << "\n";
     if (solv.nmol > 0)
     {
         log_stream << std::string(3, ' ') << "Number of solvent molecules: " << solv.nmol << "\n \n";
+        log_stream << std::string(3, ' ') << "Charge per molecule        : " << solv.MolCharge << " a.u.\n \n";
+
         log_stream << std::string(3, ' ') << "Solvent Atomic Coordinates (Å): \n \n";
         log_stream << std::string(4, ' ') << "Atom name         X             Y             Z          Mol. Index: \n";
         log_stream << std::string(4, ' ') << "---------     ---------     ---------     ---------     ------------ \n";
@@ -207,6 +209,125 @@ void Output::print_formatted_line4(std::ostream &out, const std::string atom, do
     char line[100];
     std::snprintf(line, sizeof(line), "       %-5s   %12.6f  %12.6f  %12.6f        %5d\n", atom.c_str(), x, y, z, mol_index);
     out << line;
+}
+//----------------------------------------------------------------------
+// Prints a matrix in 5-column blocks.
+void Output::print_matrix(const std::string &title, const std::vector<std::vector<double>> &matrix) const
+{
+
+    const int title_width = 80;
+    const int left_padding = std::max(0, (title_width - static_cast<int>(title.size())) / 2);
+    log_stream << std::string(left_padding, ' ') << title << "\n\n";
+
+    log_stream << " " << sticks << "\n";
+
+    if (matrix.empty())
+    {
+        log_stream << "\n   Empty matrix\n";
+        log_stream << " " << sticks << "\n";
+        log_stream.flush();
+        return;
+    }
+
+    const std::ios::fmtflags old_flags = log_stream.flags();
+    const std::streamsize old_precision = log_stream.precision();
+    const char old_fill = log_stream.fill();
+
+    const std::size_t ncols = matrix.front().size();
+    for (const auto &row : matrix)
+    {
+        if (row.size() != ncols)
+        {
+            throw std::runtime_error("Cannot print matrix: rows have different sizes.");
+        }
+    }
+
+    constexpr std::size_t block_size = 5;
+    for (std::size_t col0 = 0; col0 < ncols; col0 += block_size)
+    {
+        const std::size_t col1 = std::min(col0 + block_size, ncols);
+
+        log_stream << "\n";
+        log_stream << "   ";
+        for (std::size_t col = col0; col < col1; ++col)
+        {
+            log_stream << std::setw(13) << (col + 1);
+        }
+        log_stream << "\n";
+
+        for (std::size_t row = 0; row < matrix.size(); ++row)
+        {
+            log_stream << std::setw(4) << (row + 1) << "    ";
+            for (std::size_t col = col0; col < col1; ++col)
+            {
+                log_stream << std::scientific << std::setprecision(4)
+                           << std::setw(11) << matrix[row][col] << "  ";
+            }
+            log_stream << "\n";
+        }
+    }
+
+    log_stream.flags(old_flags);
+    log_stream.precision(old_precision);
+    log_stream.fill(old_fill);
+
+    log_stream << "\n "
+               << sticks << "\n\n";
+    log_stream.flush();
+}
+//----------------------------------------------------------------------
+// Prints a packed triangular matrix by reconstructing the full dense matrix.
+void Output::print_matrix(const std::string &title,
+                          const std::vector<double> &packed_matrix,
+                          int order,
+                          const std::string &triangle) const
+{
+    if (order < 0)
+    {
+        throw std::runtime_error("Cannot print packed matrix: order must be non-negative.");
+    }
+
+    const int expected_size = (order * (order + 1)) / 2;
+    if (static_cast<int>(packed_matrix.size()) != expected_size)
+    {
+        throw std::runtime_error("Cannot print packed matrix: packed size does not match matrix order.");
+    }
+
+    if (triangle != "L" && triangle != "U")
+    {
+        throw std::runtime_error("Cannot print packed matrix: triangle must be \"L\" or \"U\".");
+    }
+
+    std::vector<std::vector<double>> matrix(order, std::vector<double>(order, 0.0));
+
+    if (triangle == "L")
+    {
+        for (int row = 0; row < order; ++row)
+        {
+            const int offset = (row * (row + 1)) / 2;
+            for (int col = 0; col <= row; ++col)
+            {
+                const double value = packed_matrix[offset + col];
+                matrix[row][col] = value;
+                matrix[col][row] = value;
+            }
+        }
+    }
+    else
+    {
+        int packed_index = 0;
+        for (int col = 0; col < order; ++col)
+        {
+            for (int row = 0; row <= col; ++row)
+            {
+                const double value = packed_matrix[packed_index++];
+                matrix[row][col] = value;
+                matrix[col][row] = value;
+            }
+        }
+    }
+
+    print_matrix(title, matrix);
 }
 //----------------------------------------------------------------------
 // Print in an output file the results of the computed potentials/fields at the solvent coordinates.
