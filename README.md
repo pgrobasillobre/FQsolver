@@ -1,7 +1,7 @@
 # FQSolver: QM/MM Solvent Effects Computations
 
 <p align="center">
-  <img src="docs/_static/FQSolver.png" width="600">
+  <img src="docs/_static/fqsolver_logo.svg" width="600">
 </p>
 
 ## Table of Contents
