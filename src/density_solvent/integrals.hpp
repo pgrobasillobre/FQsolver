@@ -21,16 +21,13 @@ class Integrals
 public:
   // ---- Computed values ----
   double coulomb_acceptor_donor = 0.0;
-  std::vector<std::array<double, 1>> solv_pot;
-  std::vector<std::array<double, 3>> solv_fld;
-
   // ---- API ----
 
   /// @brief Computes the potential and field at the solvent coordinates from a solute density.
   /// @param target Target system containing solute and solvent file names and calculation type.
   /// @param solute Density object representing the solute electron density.
   /// @param solv   Solvent object containing solvent geometry and atomic labels.
-  void solute_solvent_pot_fld(const Target &target, const Density &solute, const Solvent &solv);
+  void solute_solvent_pot_fld(const Target &target, const Density &solute, Solvent &solv);
 };
 
 #endif // INTEGRALS_HPP

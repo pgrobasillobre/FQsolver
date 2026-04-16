@@ -55,7 +55,7 @@ void Algorithm::solute_dens_solvent_pot_fld(Target &target)
     //  Print results
     //
     //    out.print_results_integrals(target, integrals);
-    out.print_results_pot_fld(target, solv, integrals);
+    out.print_results_pot_fld(target, solv);
 }
 //----------------------------------------------------------------------
 // Compute FQ charges:

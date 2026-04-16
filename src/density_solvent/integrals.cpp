@@ -7,12 +7,11 @@
 #include <omp.h>
 #include <ostream>
 #include <stdexcept>
-#include <iostream>
 
 //----------------------------------------------------------------------
 // Solute-solvent potential and field:
 //
-void Integrals::solute_solvent_pot_fld(const Target &target, const Density &solute, const Solvent &solv)
+void Integrals::solute_solvent_pot_fld(const Target &target, const Density &solute, Solvent &solv)
 {
 
   // This function computes the potential/field at the solvent coordinates due to the solute density.
@@ -32,6 +31,8 @@ void Integrals::solute_solvent_pot_fld(const Target &target, const Density &solu
   const auto &rho_solute = solute.rho_reduced;
   const auto &xyz_solute = solute.xyz;
   const auto &xyz_solvent = solv.xyz;
+  auto &solv_pot = solv.solv_pot;
+  auto &solv_fld = solv.solv_fld;
 
   // Precompute constants for the screened Coulomb potential
   const double inv_QMscrnFact = 1.0 / Parameters::QMscrnFact;
@@ -158,5 +159,6 @@ void Integrals::solute_solvent_pot_fld(const Target &target, const Density &solu
   {
     throw std::runtime_error("Invalid 'what' option for solute-solvent calculation.");
   }
+
 }
 //----------------------------------------------------------------------

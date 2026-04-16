@@ -63,8 +63,7 @@ public:
     /// @brief Prints results of computed potentials and fields.
     /// @param target Target configuration.
     /// @param solv Solvent object containing solvent data.
-    /// @param integrals Integrals object containing computed values.
-    void print_results_pot_fld(const Target &target, const Solvent &solv, const Integrals &integrals);
+    void print_results_pot_fld(const Target &target, const Solvent &solv);
 
     /// @brief Outputs the coordinates of the cube density.
     /// @param what_dens Label (e.g., "donor", "acceptor").
@@ -88,6 +87,12 @@ public:
                       const std::vector<double> &packed_matrix,
                       int order,
                       const std::string &triangle) const;
+
+    /// @brief Prints the FQ RHS vector together with the quantities used to build it.
+    /// @param title Section title printed above the matrix.
+    /// @param solv Solvent object containing atom data, potentials, and FQ parameters.
+    /// @param rhs RHS vector to print.
+    void print_matrix_rhs(const std::string &title, const Solvent &solv, const std::vector<double> &rhs) const;
 
     /// @brief Prints nanoparticle coordinates and dipoles, if present.
     /// @param infile Source file name.

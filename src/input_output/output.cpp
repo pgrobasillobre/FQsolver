@@ -330,9 +330,63 @@ void Output::print_matrix(const std::string &title,
     print_matrix(title, matrix);
 }
 //----------------------------------------------------------------------
+// Prints the FQ RHS vector together with the quantities used to build it.
+void Output::print_matrix_rhs(const std::string &title, const Solvent &solv, const std::vector<double> &rhs) const
+{
+    if (static_cast<int>(rhs.size()) < solv.natoms)
+    {
+        throw std::runtime_error("Cannot print FQ RHS vector: RHS size is smaller than the number of solvent atoms.");
+    }
+
+    if (static_cast<int>(solv.solv_pot.size()) != solv.natoms ||
+        static_cast<int>(solv.xyz.size()) != solv.natoms ||
+        static_cast<int>(solv.typeIndex.size()) != solv.natoms)
+    {
+        throw std::runtime_error("Cannot print FQ RHS vector: solvent data are incomplete.");
+    }
+
+    const int title_width = 80;
+    const int left_padding = std::max(0, (title_width - static_cast<int>(title.size())) / 2);
+    log_stream << std::string(left_padding, ' ') << title << "\n\n";
+    log_stream << " " << sticks << "\n\n";
+    log_stream << "    Atom name      Mol. Index          Chi          Potential          FQ RHS Vector RHS\n";
+    log_stream << "    ---------      ----------       ---------       ---------       ---------\n";
+
+    for (int i = 0; i < solv.natoms; ++i)
+    {
+        const int type_index = solv.typeIndex[i];
+        if (type_index < 0 || type_index >= static_cast<int>(solv.typeChi.size()))
+        {
+            throw std::runtime_error("Cannot print FQ RHS vector: invalid solvent atom type index.");
+        }
+
+        int mol_index = 0;
+        if (static_cast<int>(solv.MolIndex.size()) == solv.natoms)
+        {
+            mol_index = solv.MolIndex[i][0];
+        }
+        else if (static_cast<int>(solv.atomsToIndex.size()) == solv.natoms)
+        {
+            mol_index = solv.atomsToIndex[i] + 1;
+        }
+
+        char line[160];
+        std::snprintf(line, sizeof(line), "       %-5s        %5d        %12.6f    %12.6f    %12.6f\n",
+                      solv.atomic_label[i].c_str(),
+                      mol_index,
+                      solv.typeChi[type_index],
+                      solv.solv_pot[i][0],
+                      rhs[i]);
+        log_stream << line;
+    }
+
+    log_stream << "\n " << sticks << "\n\n";
+    log_stream.flush();
+}
+//----------------------------------------------------------------------
 // Print in an output file the results of the computed potentials/fields at the solvent coordinates.
 // The output file contains the atom type, the XYZ coordinates, the computed potential, and the computed field vector for each solvent atom.
-void Output::print_results_pot_fld(const Target &target, const Solvent &solv, const Integrals &integrals)
+void Output::print_results_pot_fld(const Target &target, const Solvent &solv)
 {
     // Create a folder FQSolver_results if it does not exist, to store the results.
     std::filesystem::path results_dir("FQSolver_results");
@@ -447,43 +501,43 @@ void Output::print_results_pot_fld(const Target &target, const Solvent &solv, co
     // Write the computed potential and field for each solvent atom to the output file.
     if (target.what == "potential")
     {
-        for (int i = 0; i < integrals.solv_pot.size(); ++i)
+        for (int i = 0; i < static_cast<int>(solv.solv_pot.size()); ++i)
         {
             outfile << std::left << "     " << std::setw(atom_width) << solv.atomic_label[i] << gap
                     << std::right << std::fixed << std::setprecision(16)
                     << std::setw(value_width) << solv.xyz[i][0] * Parameters::ToAng << gap
                     << std::setw(value_width) << solv.xyz[i][1] * Parameters::ToAng << gap
                     << std::setw(value_width) << solv.xyz[i][2] * Parameters::ToAng << gap
-                    << std::setw(value_width) << integrals.solv_pot[i][0] << "\n";
+                    << std::setw(value_width) << solv.solv_pot[i][0] << "\n";
         }
     }
     else if (target.what == "field")
     {
-        for (int i = 0; i < integrals.solv_fld.size(); ++i)
+        for (int i = 0; i < static_cast<int>(solv.solv_fld.size()); ++i)
         {
             outfile << std::left << "     " << std::setw(atom_width) << solv.atomic_label[i] << gap
                     << std::right << std::fixed << std::setprecision(16)
                     << std::setw(value_width) << solv.xyz[i][0] * Parameters::ToAng << gap
                     << std::setw(value_width) << solv.xyz[i][1] * Parameters::ToAng << gap
                     << std::setw(value_width) << solv.xyz[i][2] * Parameters::ToAng << gap
-                    << std::setw(value_width) << integrals.solv_fld[i][0] << gap
-                    << std::setw(value_width) << integrals.solv_fld[i][1] << gap
-                    << std::setw(value_width) << integrals.solv_fld[i][2] << "\n";
+                    << std::setw(value_width) << solv.solv_fld[i][0] << gap
+                    << std::setw(value_width) << solv.solv_fld[i][1] << gap
+                    << std::setw(value_width) << solv.solv_fld[i][2] << "\n";
         }
     }
     else if (target.what == "potential+field")
     {
-        for (int i = 0; i < integrals.solv_pot.size(); ++i)
+        for (int i = 0; i < static_cast<int>(solv.solv_pot.size()); ++i)
         {
             outfile << std::left << "     " << std::setw(atom_width) << solv.atomic_label[i] << gap
                     << std::right << std::fixed << std::setprecision(16)
                     << std::setw(value_width) << solv.xyz[i][0] * Parameters::ToAng << gap
                     << std::setw(value_width) << solv.xyz[i][1] * Parameters::ToAng << gap
                     << std::setw(value_width) << solv.xyz[i][2] * Parameters::ToAng << gap
-                    << std::setw(value_width) << integrals.solv_pot[i][0] << gap
-                    << std::setw(value_width) << integrals.solv_fld[i][0] << gap
-                    << std::setw(value_width) << integrals.solv_fld[i][1] << gap
-                    << std::setw(value_width) << integrals.solv_fld[i][2] << "\n";
+                    << std::setw(value_width) << solv.solv_pot[i][0] << gap
+                    << std::setw(value_width) << solv.solv_fld[i][0] << gap
+                    << std::setw(value_width) << solv.solv_fld[i][1] << gap
+                    << std::setw(value_width) << solv.solv_fld[i][2] << "\n";
         }
     }
     // Close the output file stream.

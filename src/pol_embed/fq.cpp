@@ -2,6 +2,7 @@
 #include "output.hpp"
 #include "solvent.hpp"
 #include "target.hpp"
+#include "integrals.hpp"
 
 #include <iostream>
 #include <cmath>
@@ -17,6 +18,9 @@ void FQ::calc_charges(Solvent &solv, const Target &target, const Output &out)
 
     // Calculate FQ LHS DMatrix
     calc_dmat(solv, target, out);
+
+    // Calculate FQ RHS vector
+    calc_rhs(solv, target, out);
 }
 //  ----------------------------------------------------------------------
 // Compute the Tqq matrix (charge-charge interaction tensor).
@@ -242,5 +246,50 @@ void FQ::calc_dmat(Solvent &solv, const Target &target, const Output &out)
     if (target.debug >= 2)
     {
         out.print_matrix("FQ DMatrix", Dmat, norder, "L");
+    }
+}
+// ----------------------------------------------------------------------
+// Calculation of FQ RHS vector
+void FQ::calc_rhs(Solvent &solv, const Target &target, const Output &out)
+{
+    // Initial checks
+    if (static_cast<int>(solv.solv_pot.size()) != solv.natoms)
+    {
+        throw std::runtime_error("calc_rhs: Solvent potential data are not ready for FQ RHS calculation.");
+    }
+
+    // debugpgi
+    //  Introduce potential from ADF to debug
+    // solv.solv_pot[0][0] = -0.0000267235957726;
+    // solv.solv_pot[1][0] = -0.0000281716086517;
+    // solv.solv_pot[2][0] = -0.0000291111489726;
+    // solv.solv_pot[3][0] = -0.0000067889794474;
+    // solv.solv_pot[4][0] = -0.0000049062211308;
+    // solv.solv_pot[5][0] = -0.0000057162322666;
+    // enddebugpgi
+
+    rhs.assign(norder, 0.0);
+    // RHS atomic block: -potential at each atomic site - FQ electronegativity by atom type
+    for (int i = 0; i < solv.natoms; ++i)
+    {
+        rhs[i] = -solv.solv_pot[i][0] - solv.typeChi[solv.typeIndex[i]];
+    }
+
+    // RHS constraint block: molecular charge for each solvent molecule
+    for (int i = solv.natoms; i < norder; ++i)
+    {
+        rhs[i] = solv.MolCharge;
+    }
+
+    // print rhs for debuggin
+    for (int i = 0; i < norder; ++i)
+    {
+        std::cout << rhs[i] << std::endl;
+    }
+
+    // Print RHS vector for debugging.
+    if (target.debug >= 2)
+    {
+        out.print_matrix_rhs("FQ RHS Vector", solv, rhs);
     }
 }
