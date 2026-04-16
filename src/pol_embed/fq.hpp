@@ -19,6 +19,7 @@ public:
   std::vector<std::vector<double>> tempTqq; // Temporary storage for Tqq tensor components.
   std::vector<double> Dmat;                 // FQ LHS matrix lower triangular part stored in a 1D array
   std::vector<double> rhs;                  // FQ RHS vector for the linear system
+  std::vector<double> results;              // Vector to store results from Ax=B solution (results=x)
 
   int norder = 0;  ///< Order of FQ Dmatrix
   int nlength = 0; ///< Length of to store FQ matrix lower triangular part in a 1D array
@@ -48,6 +49,10 @@ private:
   /// @param target Target system containing debug settings.
   /// @param out  Output object used for debug printing.
   void calc_rhs(Solvent &solv, const Target &target, const Output &out);
+
+  /// @brief Calculate FQ charges
+  /// @param out  Output object used for debug printing.
+  void directsolve(const Solvent &solv, const Target &target, const Output &out);
 };
 
 #endif // FQ_HPP

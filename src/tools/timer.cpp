@@ -4,6 +4,26 @@
 #include <iomanip>
 #include <stdexcept>
 #include <ctime>
+#include <cmath>
+#include <sys/resource.h>
+
+namespace
+{
+double current_cpu_seconds()
+{
+    rusage usage{};
+    if (getrusage(RUSAGE_SELF, &usage) != 0)
+    {
+        return 0.0;
+    }
+
+    const double user_seconds = static_cast<double>(usage.ru_utime.tv_sec) +
+                                static_cast<double>(usage.ru_utime.tv_usec) * 1.0e-6;
+    const double system_seconds = static_cast<double>(usage.ru_stime.tv_sec) +
+                                  static_cast<double>(usage.ru_stime.tv_usec) * 1.0e-6;
+    return user_seconds + system_seconds;
+}
+}
 
 //----------------------------------------------------------------------
 // Initialize default timers (e.g., "total")
@@ -19,6 +39,7 @@ void Timer::start(const std::string &name)
     if (it != timers.end())
     {
         it->second.start_time = std::chrono::high_resolution_clock::now();
+        it->second.start_cpu_time = current_cpu_seconds();
         it->second.started = true;
     }
     else
@@ -34,6 +55,7 @@ void Timer::finish(const std::string &name)
     if (it != timers.end() && it->second.started)
     {
         it->second.end_time = std::chrono::high_resolution_clock::now();
+        it->second.end_cpu_time = current_cpu_seconds();
         it->second.finished = true;
     }
     else
@@ -55,16 +77,23 @@ void Timer::conclude(const Output &out)
     const std::string timer_name = "total";
 
     long long elapsed_seconds = 0;
+    long long cpu_seconds = 0;
     if (timers.count(timer_name) && timers[timer_name].started && timers[timer_name].finished)
     {
         elapsed_seconds = duration_cast<seconds>(
                               timers[timer_name].end_time - timers[timer_name].start_time)
                               .count();
+        cpu_seconds = static_cast<long long>(std::llround(timers[timer_name].end_cpu_time -
+                                                          timers[timer_name].start_cpu_time));
     }
 
-    int hours = static_cast<int>(elapsed_seconds / 3600);
-    int minutes = static_cast<int>((elapsed_seconds % 3600) / 60);
-    int seconds = static_cast<int>(elapsed_seconds % 60);
+    int cpu_hours = static_cast<int>(cpu_seconds / 3600);
+    int cpu_minutes = static_cast<int>((cpu_seconds % 3600) / 60);
+    int cpu_secs = static_cast<int>(cpu_seconds % 60);
+
+    int elapsed_hours = static_cast<int>(elapsed_seconds / 3600);
+    int elapsed_minutes = static_cast<int>((elapsed_seconds % 3600) / 60);
+    int elapsed_secs = static_cast<int>(elapsed_seconds % 60);
 
     // Header
     // out.stream() << " " << out.sticks << "\n\n";
@@ -74,14 +103,14 @@ void Timer::conclude(const Output &out)
 
     // Timing Info
     out.stream() << std::setw(42) << " " << "CPU Time:    "
-                 << std::setw(3) << hours << " h "
-                 << std::setw(2) << minutes << " min "
-                 << std::setw(2) << seconds << " sec\n";
+                 << std::setw(3) << cpu_hours << " h "
+                 << std::setw(2) << cpu_minutes << " min "
+                 << std::setw(2) << cpu_secs << " sec\n";
 
     out.stream() << std::setw(42) << " " << "Elapsed Time:"
-                 << std::setw(3) << hours << " h "
-                 << std::setw(2) << minutes << " min "
-                 << std::setw(2) << seconds << " sec\n";
+                 << std::setw(3) << elapsed_hours << " h "
+                 << std::setw(2) << elapsed_minutes << " min "
+                 << std::setw(2) << elapsed_secs << " sec\n";
 
     out.stream() << "\n " << out.sticks << "\n\n";
 

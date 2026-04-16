@@ -94,6 +94,18 @@ public:
     /// @param rhs RHS vector to print.
     void print_matrix_rhs(const std::string &title, const Solvent &solv, const std::vector<double> &rhs) const;
 
+    /// @brief Prints FQ charges by atom.
+    /// @param title Section title printed above the charge table.
+    /// @param solv Solvent object containing atom labels and molecule indices.
+    /// @param results Solution vector containing charges followed by Lagrange multipliers.
+    void print_results(const std::string &title, const Solvent &solv, const std::vector<double> &results) const;
+
+    /// @brief Writes FQ charges to the FQSolver_results directory.
+    /// @param target Target configuration.
+    /// @param solv Solvent object containing solvent data, potentials, and molecule indices.
+    /// @param results Solution vector containing charges followed by Lagrange multipliers.
+    void print_results(const Target &target, const Solvent &solv, const std::vector<double> &results) const;
+
     /// @brief Prints nanoparticle coordinates and dipoles, if present.
     /// @param infile Source file name.
     /// @param np Nanoparticle object.

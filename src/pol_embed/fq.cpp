@@ -4,11 +4,24 @@
 #include "target.hpp"
 #include "integrals.hpp"
 
+#include <algorithm>
+#include <cstdlib>
 #include <iostream>
 #include <cmath>
 #include <stdexcept>
 #include <vector>
 
+extern "C"
+{
+    void dspsv_(const char *uplo,
+                const int *n,
+                const int *nrhs,
+                double *ap,
+                int *ipiv,
+                double *b,
+                const int *ldb,
+                int *info);
+}
 //----------------------------------------------------------------------
 // Compute FQ charges from the potential and solvent parameters.
 void FQ::calc_charges(Solvent &solv, const Target &target, const Output &out)
@@ -21,6 +34,9 @@ void FQ::calc_charges(Solvent &solv, const Target &target, const Output &out)
 
     // Calculate FQ RHS vector
     calc_rhs(solv, target, out);
+
+    // Solve FQ equation
+    directsolve(solv, target, out);
 }
 //  ----------------------------------------------------------------------
 // Compute the Tqq matrix (charge-charge interaction tensor).
@@ -137,7 +153,7 @@ void FQ::calc_dmat(Solvent &solv, const Target &target, const Output &out)
     }
 
     //
-    // DMatrix is the packed lower-triangular form of the full FQ linear system:
+    // DMatrix is stored in LAPACK upper-packed order for the full FQ linear system:
     //
     //        | Tqq   C^T |
     //    D = |           |
@@ -165,7 +181,8 @@ void FQ::calc_dmat(Solvent &solv, const Target &target, const Output &out)
     // lM-1  |                                        |
     //        -----------------------------------------------------------------
     //
-    // Packed lower-triangular indexing uses zero-based C++ indices:
+    // The stored entries are written with lower-triangle coordinates, but the packed
+    // layout is identical to LAPACK upper-packed storage for a symmetric matrix:
     //
     //   packed_index(row, col) = row * (row + 1) / 2 + col,  with col <= row
     //
@@ -195,7 +212,7 @@ void FQ::calc_dmat(Solvent &solv, const Target &target, const Output &out)
     //   l1  |   0         0         0         1         1         1         0         0       |
     //        ---------------------------------------------------------------------------------
     //
-    // Dmat stores only the lower triangle of this symmetric matrix.
+    // Dmat stores these entries in LAPACK upper-packed order.
     // The packed index for zero-based C++ indices is:
     //
     //   packed_index(row, col) = row * (row + 1) / 2 + col, with col <= row
@@ -242,10 +259,10 @@ void FQ::calc_dmat(Solvent &solv, const Target &target, const Output &out)
         Dmat[packed_index] = 1.0;
     }
 
-    // Print Dmatrix reconstructing the full dense form
+    // Print Dmatrix reconstructing the full dense form.
     if (target.debug >= 2)
     {
-        out.print_matrix("FQ DMatrix", Dmat, norder, "L");
+        out.print_matrix("FQ DMatrix", Dmat, norder, "U");
     }
 }
 // ----------------------------------------------------------------------
@@ -257,16 +274,6 @@ void FQ::calc_rhs(Solvent &solv, const Target &target, const Output &out)
     {
         throw std::runtime_error("calc_rhs: Solvent potential data are not ready for FQ RHS calculation.");
     }
-
-    // debugpgi
-    //  Introduce potential from ADF to debug
-    // solv.solv_pot[0][0] = -0.0000267235957726;
-    // solv.solv_pot[1][0] = -0.0000281716086517;
-    // solv.solv_pot[2][0] = -0.0000291111489726;
-    // solv.solv_pot[3][0] = -0.0000067889794474;
-    // solv.solv_pot[4][0] = -0.0000049062211308;
-    // solv.solv_pot[5][0] = -0.0000057162322666;
-    // enddebugpgi
 
     rhs.assign(norder, 0.0);
     // RHS atomic block: -potential at each atomic site - FQ electronegativity by atom type
@@ -281,15 +288,63 @@ void FQ::calc_rhs(Solvent &solv, const Target &target, const Output &out)
         rhs[i] = solv.MolCharge;
     }
 
-    // print rhs for debuggin
-    for (int i = 0; i < norder; ++i)
-    {
-        std::cout << rhs[i] << std::endl;
-    }
-
     // Print RHS vector for debugging.
     if (target.debug >= 2)
     {
         out.print_matrix_rhs("FQ RHS Vector", solv, rhs);
+    }
+}
+// ----------------------------------------------------------------------
+void FQ::directsolve(const Solvent &solv, const Target &target, const Output &out)
+{
+    if (norder <= 0)
+    {
+        throw std::runtime_error("directsolve: DMatrix order has not been initialized.");
+    }
+
+    if (static_cast<int>(Dmat.size()) != nlength)
+    {
+        throw std::runtime_error("directsolve: DMatrix packed storage has an unexpected size.");
+    }
+
+    if (static_cast<int>(rhs.size()) != norder)
+    {
+        throw std::runtime_error("directsolve: RHS vector size does not match DMatrix order.");
+    }
+
+    const char uplo = 'U';
+    const int n = norder;
+    const int nrhs = 1;
+    const int ldb = norder;
+    int info = 0;
+
+    std::vector<int> ipiv(norder, 0);
+    results = rhs;
+
+    const int n_threads = std::max(1, target.n_threads_OMP);
+#ifndef _WIN32
+    const std::string n_threads_string = std::to_string(n_threads);
+    setenv("OMP_NUM_THREADS", n_threads_string.c_str(), 1);
+    setenv("OPENBLAS_NUM_THREADS", n_threads_string.c_str(), 1);
+    setenv("MKL_NUM_THREADS", n_threads_string.c_str(), 1);
+    setenv("VECLIB_MAXIMUM_THREADS", n_threads_string.c_str(), 1);
+    setenv("BLIS_NUM_THREADS", n_threads_string.c_str(), 1);
+#endif
+
+    dspsv_(&uplo, &n, &nrhs, Dmat.data(), ipiv.data(), results.data(), &ldb, &info);
+
+    if (info < 0)
+    {
+        throw std::runtime_error("directsolve: LAPACK dspsv argument " + std::to_string(-info) + " has an illegal value.");
+    }
+
+    if (info > 0)
+    {
+        throw std::runtime_error("directsolve: DMatrix is singular; LAPACK dspsv failed at pivot " + std::to_string(info) + ".");
+    }
+
+    if (target.debug >= 2)
+    {
+        out.print_results("FQ Charges", solv, results);
     }
 }

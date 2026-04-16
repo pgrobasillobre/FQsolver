@@ -13,3 +13,4 @@ add_FQSolver_runtest(potential_from_density                           "Solute - 
 add_FQSolver_runtest(field_from_density                               "Solute - Solvent Field")
 add_FQSolver_runtest(potential_field_from_density                     "Solute - Solvent Potential and Field")
 add_FQSolver_runtest(potential_field_from_density_PDB                 "Solute - Solvent Potential and Field PDB")
+add_FQSolver_runtest(fq_from_density                                  "FQ solvent charges from solute density")

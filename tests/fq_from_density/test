@@ -10,11 +10,11 @@ from runtest_config import configure
 options = cli()
 ierr = run(options,
            configure,
-           input_files=['potential_from_density.inp'],
+           input_files=['fq_from_density.inp'],
            output_files=[
                (
-                   'FQSolver_results/potential_from_density_pot.txt',
-                   'reference/FQSolver_results/potential_from_density_pot.txt',
+                   'FQSolver_results/fq_from_density_charges.txt',
+                   'reference/FQSolver_results/fq_from_density_charges.txt',
                )
            ])
 

@@ -40,6 +40,25 @@ done
 # Set final build directory
 buildir=$build
 
+# Detect available processors for parallel test execution.
+if command -v getconf >/dev/null 2>&1; then
+    nproc=$(getconf _NPROCESSORS_ONLN 2>/dev/null)
+elif command -v sysctl >/dev/null 2>&1; then
+    nproc=$(sysctl -n hw.ncpu 2>/dev/null)
+else
+    nproc=1
+fi
+
+case "$nproc" in
+    ''|*[!0-9]*)
+        nproc=1
+        ;;
+esac
+
+if [ "$nproc" -lt 1 ]; then
+    nproc=1
+fi
+
 # Create and enter build directory
 mkdir -p "$buildir"
 cd "$buildir"
@@ -68,6 +87,17 @@ if [ $cmake_status -ne 0 ]; then
     exit 1
 fi
 
+# Configure convenient parallel test execution.
+cat > run_tests.sh <<EOF
+#!/bin/sh
+CTEST_PARALLEL_LEVEL=${nproc} ctest -j ${nproc} --output-on-failure "\$@"
+EOF
+chmod +x run_tests.sh
+
+cat > CTestCustom.cmake <<EOF
+set(CTEST_PARALLEL_LEVEL ${nproc})
+EOF
+
 # Final user instructions
 echo ""
 echo "✅ CMake configuration complete."
@@ -78,5 +108,7 @@ echo "$ make -j"
 echo ""
 echo "To test:"
 echo "$ cd $buildir"
-echo "$ ctest"
+echo "$ ./run_tests.sh"
+echo ""
+echo "Parallel test level: $nproc"
 echo ""

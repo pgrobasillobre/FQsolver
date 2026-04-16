@@ -52,6 +52,8 @@ private:
     struct TimeData {
         std::chrono::high_resolution_clock::time_point start_time; ///< Start timestamp
         std::chrono::high_resolution_clock::time_point end_time;   ///< End timestamp
+        double start_cpu_time = 0.0; ///< Start CPU time in seconds
+        double end_cpu_time = 0.0;   ///< End CPU time in seconds
         bool started = false;   ///< True if the timer has been started
         bool finished = false;  ///< True if the timer has been finished
     };
@@ -62,4 +64,3 @@ private:
 
 #endif // TIMER_HPP
 //----------------------------------------------------------------------
-

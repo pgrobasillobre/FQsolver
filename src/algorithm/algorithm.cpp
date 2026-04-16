@@ -89,4 +89,7 @@ void Algorithm::compute_fq_charges(Target &target)
     //  Compute FQ charges from potential and solvent parameters
     //
     fq.calc_charges(solv, target, out);
+
+    // Print results
+    out.print_results(target, solv, fq.results);
 }

@@ -175,13 +175,12 @@ void Density::read_density(Target &target, const Output &out, const std::string 
     geom_center_mol[2] /= natoms;
 
     // Check both centers are the same up to a threshold of 0.3)
-    // debugpgi: uncomment this after debug
-    // if (std::abs(geom_center[0] - geom_center_mol[0]) > 0.3 ||
-    //    std::abs(geom_center[1] - geom_center_mol[1]) > 0.3 ||
-    //    std::abs(geom_center[2] - geom_center_mol[2]) > 0.3)
-    //{
-    // throw std::runtime_error("Geometric center of the density and molecule do not match.");
-    //}
+    if (std::abs(geom_center[0] - geom_center_mol[0]) > 0.3 ||
+        std::abs(geom_center[1] - geom_center_mol[1]) > 0.3 ||
+        std::abs(geom_center[2] - geom_center_mol[2]) > 0.3)
+    {
+        throw std::runtime_error("Density file corrupt: geometric center of the density and molecule do not match.");
+    }
 }
 //----------------------------------------------------------------------
 // Integrate the density grid (sum over all voxels).
