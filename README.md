@@ -1,4 +1,4 @@
-# FQSolver: an Open Source Code for QM/MM Solvent Effects
+# FQSolver: QM/MM Solvent Effects Computations
 
 <p align="center">
   <img src="docs/_static/FQSolver.png" width="600">
