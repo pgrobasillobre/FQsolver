@@ -1,7 +1,6 @@
-# FQSolver: an Open Source Code for Electrostatic Potentials, Fields, and Fluctuating Charges
+# FQSolver: an Open Source Code for QM/MM Solvent Effects
 
 <p align="center">
-  <!-- FQSolver logo placeholder. Replace this path/URL when the logo is ready. -->
   <img src="docs/_static/FQSolver.png" width="600">
 </p>
 
@@ -14,6 +13,7 @@
 - [Input Files](#input-files)
 - [Tests](#tests)
 - [License](#license)
+- [Funding](#funding)
 - [Contact](#contact)
 
 ## About
@@ -59,20 +59,28 @@ For FQ calculations, solvent charges are obtained by solving a linear system bas
 The FQ linear system has the block structure:
 
 $$
-\begin{pmatrix}
+\left(
+\begin{array}{cc}
 T^{qq} & C^T \\
-C      & 0
-\end{pmatrix}
-\begin{pmatrix}
+C & 0
+\end{array}
+\right)
+\left(
+\begin{array}{c}
 q \\
 \lambda
-\end{pmatrix}
-=
-\begin{pmatrix}
+\end{array}
+\right)
+\;=\;
+\left(
+\begin{array}{c}
 -V - \chi \\
 Q
-\end{pmatrix}
+\end{array}
+\right)
 $$
+
+
 
 where:
 
@@ -265,6 +273,10 @@ tests/
 ## License
 
 FQSolver is licensed under the **GNU General Public License v3.0**.
+
+## Funding
+
+This project has been supported by the **FARE 2020** program — *"Framework per l’attrazione e il rafforzamento delle eccellenze per la ricerca in Italia."*
 
 ## Contact
 
